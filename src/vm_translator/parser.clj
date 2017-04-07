@@ -39,7 +39,7 @@
   the given regex re"
   [source re f]
   (if-let [[source command & parts] (re-matches re source)
-           cmd-obj {:source source :command command}]
+           cmd-ctx {:source source :command command}]
     (fn cmd-ctx parts)
     nil))
 
