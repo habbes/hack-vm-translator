@@ -29,3 +29,23 @@
     (let [command (clean-line "  push   constant 3 // comment")]
       (is (= "push constant 3")))))
 
+(deftest parser-arithmetic-command-test
+  (testing "returns the same command and source as in context object"
+    (let [cmd (parse-arithmetic-command {:source "add" :command "add"} [])]
+      (is (= cmd {:source "add" :command "add"})))
+    (let [cmd (parse-arithmetic-command {:source "neg" :command "neg"} [])]
+      (is (= cmd {:source "neg" :command "neg"})))))
+
+(deftest parse-push-pop-command-test
+  (testing "adds segment and index to context"
+    (let [cmd
+          (parse-push-pop-command
+            {:source "push local 1" :command "push"} ["local" "1"])]
+      (is (= cmd {:source "push local 1" :command "push"
+                  :segment "local" :index "1"})))
+    (let [cmd
+          (parse-push-pop-command
+            {:source "pop that 5" :command "pop"} ["that" "5"])]
+      (is (= cmd {:source "pop that 5" :command "pop"
+                  :segment "that" :index "5"})))))
+
