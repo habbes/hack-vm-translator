@@ -62,3 +62,18 @@
       (let [source "cmd" cmd (parse-if-match source re f)]
         (is (= nil cmd))))))
 
+(deftest match-and-parse-test
+  (let [re-f-pairs [[#"(\w+) (\w+)" (fn [cmd [arg]] (assoc cmd :arg arg))]
+                    [#"(\w+)" (fn [cmd _] cmd)]]]
+    (testing "parses with matching f if source has match"
+      (let [source "cmd 1" cmd (match-and-parse source re-f-pairs)]
+        (is (= {:source "cmd 1"
+                :command "cmd"
+                :arg "1"})))
+      (let [source "cmd" cmd (match-and-parse source re-f-pairs)]
+        (is (= {:source "cmd"
+                :command "cmd"}))))
+    (testing "returns in nil if there is no match"
+      (let [source "this has no match" cmd (match-and-parse source re-f-pairs)]
+        (is (= nil cmd))))))
+
