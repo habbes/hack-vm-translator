@@ -49,3 +49,16 @@
       (is (= cmd {:source "pop that 5" :command "pop"
                   :segment "that" :index "5"})))))
 
+(deftest parse-if-match-test
+  (let [re #"(\w+) (\w+)"
+        f (fn [cmd [arg]] (assoc cmd :arg arg))]
+    (testing "parses with given fn if re matches"
+      (let [source "cmd myarg" cmd (parse-if-match source re f)]
+        (is (= {:source "cmd myarg"
+                :command "cmd"
+                :arg "myarg"}
+               cmd))))
+    (testing "returns nil if re doesn't match"
+      (let [source "cmd" cmd (parse-if-match source re f)]
+        (is (= nil cmd))))))
+
