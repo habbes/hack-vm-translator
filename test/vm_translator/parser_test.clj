@@ -121,8 +121,8 @@
       (is (= {:source "pop pointer 0"
               :command "pop"
               :segment "pointer"
-              :index "0"
-              cmd}))))
+              :index "0"}
+              cmd))))
   (testing "returns nil if no command or no match"
     (let [source "" cmd (parse-command source)]
       (is (= nil cmd)))
