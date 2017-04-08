@@ -36,10 +36,11 @@
 
 (defn parse-if-match
   "Parses the source with the given function f if source matches
-  the given regex re"
+  the given regex re. f takes a command ctx map and
+  a vector of args for the command"
   [source re f]
-  (if-let [[source command & parts] (re-matches re source)]
-    (f {:source source :command command} parts)
+  (if-let [[source command & args] (re-matches re source)]
+    (f {:source source :command command} args)
     nil))
 
 (defn match-and-parse
