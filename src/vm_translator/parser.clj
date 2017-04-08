@@ -41,13 +41,13 @@
     nil))
 
 (defn match-and-parse
-  "Tests source lazily against each regex in re-parser-pairs and return
+  "Tests source lazily against each regex in re-f-pairs and return
   the result cmd-ctx of the first match or nil"
   [source re-f-pairs]
   (->> re-f-pairs
        (map (fn [[re f]] (parse-if-match source re f)))
        (filter identity)
-       (first)))
+       first))
 
 (defn parse-command
   "Parses a line of vm source code into a command context object based
