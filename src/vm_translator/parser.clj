@@ -38,9 +38,8 @@
   "Parses the source with the given function f if source matches
   the given regex re"
   [source re f]
-  (if-let [[source command & parts] (re-matches re source)
-           cmd-ctx {:source source :command command}]
-    (fn cmd-ctx parts)
+  (if-let [[source command & parts] (re-matches re source)]
+    (f {:source source :command command} parts)
     nil))
 
 (defn match-and-parse
