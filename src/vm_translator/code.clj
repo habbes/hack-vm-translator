@@ -31,3 +31,25 @@
                 "D=A+1"
                 "@SP"
                 "M=D"]))
+
+(defn translate-push
+  "Translates the 'push' command"
+  ; TODO implement for other segments and for nil
+  [{:keys [segment] :as cmd}]
+  (case segment
+    "constant" (translate-push-constant cmd)))
+
+(defn find-translator
+  "Finds the appropriate function to translate the given command"
+  [{:keys [command] :as cmd}]
+  (case command
+    "add" translate-add
+    "push" translate-push))
+
+(defn translate
+  "Translates the specific cmd to hack assembly. Returns nil if
+  it's not a valid command"
+  [cmd]
+  (if-let [f (find-translator cmd)]
+    (f cmd)
+    nil))
