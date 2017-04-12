@@ -11,7 +11,27 @@
                                 "A=M-1"
                                 "D=M"
                                 "A=A-1"
-                                "M=M+D"
+                                "M=D+M"
+                                "D=A+1"
+                                "@SP"
+                                "M=D"])))))
+  (testing "sub command"
+    (let [cmd {:source "sub" :command "sub"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "D=M"
+                                "A=A-1"
+                                "M=M-D"
+                                "D=A+1"
+                                "@SP"
+                                "M=D"])))))
+  (testing "neg command"
+    (let [cmd {:source "neg" :command "neg"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "M=-M"
                                 "D=A+1"
                                 "@SP"
                                 "M=D"])))))

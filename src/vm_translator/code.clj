@@ -11,8 +11,29 @@
                 ; pop the next value in the stack
                 ; add D and store the sum in the stack
                 "A=A-1"
-                "M=M+D"
+                "M=D+M"
                 ; update the stack pointer
+                "D=A+1"
+                "@SP"
+                "M=D"]))
+
+(defn translate-sub
+  "Translates the 'sub' vm command to hack assembly"
+  [cmd]
+  (s/join "\n" ["@SP"
+                "A=M-1"
+                "D=M"
+                "A=A-1"
+                "M=M-D"
+                "D=A+1"
+                "@SP"
+                "M=D"]))
+(defn translate-neg
+  "Translates the 'neg' vm command to hack assembly"
+  [cmd]
+  (s/join "\n" ["@SP"
+                "A=M-1"
+                "M=-M"
                 "D=A+1"
                 "@SP"
                 "M=D"]))
@@ -44,6 +65,8 @@
   [{:keys [command] :as cmd}]
   (case command
     "add" translate-add
+    "sub" translate-sub
+    "neg" translate-neg
     "push" translate-push
     nil))
 
