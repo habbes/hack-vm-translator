@@ -8,6 +8,16 @@
 push constant 3
 add")
 
+(def sample-source-with-comments
+"// This is a program that adds two constants
+// The constants are pushed to the stack
+// Then the add command is called
+
+push constant 5
+push constant 3
+add
+// result is 3 + 5 = 8")
+
 (def sample-output
 "// push constant 5
 @5
@@ -84,7 +94,14 @@ M=D
 
 (deftest translate-lines-test
   (testing "Translate seq of source lines into asm output string"
-    (let [lines (s/split sample-source #"\n")
+    (let [lines (s/split-lines sample-source)
+          output (atom "")
+          handler (create-sample-output-handler output)]
+      (translate-lines lines handler)
+      (is (= @output sample-output))))
+
+  (testing "Translate lines including comments"
+    (let [lines (s/split-lines sample-source-with-comments)
           output (atom "")
           handler (create-sample-output-handler output)]
       (translate-lines lines handler)

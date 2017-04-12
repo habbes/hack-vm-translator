@@ -21,10 +21,9 @@
   [lines output-handler]
   (loop [count 0]
     (if-let [line (nth lines count nil)]
-      (if-let [out (translate-line line)]
-        (do
-          (output-handler out)
-          (recur (inc count)))))))
+      (let [out (translate-line line)]
+        (output-handler out)
+        (recur (inc count))))))
 
 (defn create-writer-output-handler
   "Returns an output-handler which writes ouput
