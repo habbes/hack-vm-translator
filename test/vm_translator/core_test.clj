@@ -61,14 +61,15 @@ M=D
   (testing "translates source vm line to hack assembly with comment"
     (let [line "push constant 3" out (translate-line line)]
       (is (= out (s/join "\n" ["// push constant 3"
-                                "@3"
-                                "D=A"
-                                "@SP"
-                                "A=M"
-                                "M=D"
-                                "D=A+1"
-                                "@SP"
-                                "M=D"])))))
+                               "@3"
+                               "D=A"
+                               "@SP"
+                               "A=M"
+                               "M=D"
+                               "D=A+1"
+                               "@SP"
+                               "M=D"
+                               ""])))))
 
   (testing "Returns nil on when source is invalid"
     (let [line "not valid command" out (translate-line line)]

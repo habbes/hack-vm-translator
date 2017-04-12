@@ -10,22 +10,35 @@
   Returns nil if source code is invalid."
   [line]
   (if-let [cmd (parser/parse-command line)]
-    (code/translate-with-comment cmd)
+    (str
+      (code/translate-with-comment cmd)
+      "\n")
     nil))
+
+(defn translate-lines
+  "Translates each line in the lines seq and pass each output
+  to the output handler fn"
+  [lines output-handler]
+  (loop [count 0]
+    (if-let [line (nth lines count nil)]
+      (if-let [out (translate-line line)]
+        (do
+          (output-handler out)
+          (recur (inc count)))))))
+
+(defn create-writer-output-handler
+  "Returns an output-handler which writes ouput
+  to the specified wrtr"
+  [wrtr]
+  (fn [out] (.write wrtr out)))
 
 (defn translate-source
   "Reads vm source code from rdr and writes the output
   assembly code into wrtr"
   [rdr wrtr]
-  (let [lines (line-seq rdr)]
-    (loop [count 0]
-      (if-let [line (nth lines count nil)]
-        (if-let [out (translate-line line)]
-          (do
-            (.write wrtr out)
-            (recur (inc count)))
-          nil)
-        nil))))
+  (let [lines (line-seq rdr)
+        handler (create-writer-output-handler wrtr)]
+    (translate-lines lines handler)))
 
 (defn get-output-path
   "Get the output path for the output file based on
