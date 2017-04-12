@@ -44,7 +44,8 @@
   [{:keys [command] :as cmd}]
   (case command
     "add" translate-add
-    "push" translate-push))
+    "push" translate-push
+    nil))
 
 (defn translate
   "Translates the specific cmd to hack assembly. Returns nil if

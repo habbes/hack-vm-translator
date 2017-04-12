@@ -21,16 +21,19 @@
     (loop [count 0]
       (if-let [line (nth lines count nil)]
         (if-let [out (translate-line line)]
-          (do (.write wrtr out)
+          (do
+            (.write wrtr out)
             (recur (inc count)))
           nil)
-        nil)))
+        nil))))
 
 (defn get-output-path
   "Get the output path for the output file based on
   the input vm file."
   [input-path]
-  (s/replace #"([a-zA-Z0-9_- ]+)\.vm$" "$1.asm"))
+  (s/replace input-path
+             #"([a-zA-Z0-9_\- ]+)\.vm$"
+             "$1.asm"))
 
 (defn translate-file
   "Translate the input vm file and store the asm output in

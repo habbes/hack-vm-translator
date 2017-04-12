@@ -29,7 +29,12 @@
                                 "M=D"
                                 "D=A+1"
                                 "@SP"
-                                "M=D"]))))))
+                                "M=D"])))))
+  (testing "returns nil on invalid command"
+    (let [cmd {} code (translate cmd)]
+      (is (= code nil)))
+    (let [cmd nil code (translate cmd)]
+      (is (= code nil)))))
 
 (deftest translate-with-comment-test
   (testing "Adds source vm code as comment before output code"
