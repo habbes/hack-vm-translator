@@ -83,9 +83,18 @@ M=D
     (swap! out-atom (fn [old] (str old out)))))
 
 (deftest translate-lines-test
-  (testing ""
+  (testing "Translate seq of source lines into asm output string"
     (let [lines (s/split sample-source #"\n")
           output (atom "")
           handler (create-sample-output-handler output)]
       (translate-lines lines handler)
       (is (= @output sample-output)))))
+
+(deftest create-writer-output-handler-test
+  (testing "Creates a handler that writers output to an io writer"
+    (let [wrtr (java.io.StringWriter.)
+          handler (create-writer-output-handler wrtr)]
+      (handler "@SP\nA=M\nD=M\n")
+      (handler "D=D+1\n")
+      (is (= (.toString wrtr)
+             "@SP\nA=M\nD=M\nD=D+1\n")))))
