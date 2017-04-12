@@ -30,3 +30,20 @@
                                 "D=A+1"
                                 "@SP"
                                 "M=D"]))))))
+
+(deftest translate-with-comment-test
+  (testing "Adds source vm code as comment before output code"
+    (let [cmd {:source "push constant 17"
+               :command "push"
+               :segment "constant"
+               :index 17}
+          code (translate-with-comment cmd)]
+      (is (= code (s/join "\n" ["// push constant 17"
+                                "@17"
+                                "D=A"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "D=A+1"
+                                "@SP"
+                                "M=D"]))))))

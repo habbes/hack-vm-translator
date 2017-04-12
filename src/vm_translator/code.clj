@@ -53,3 +53,11 @@
   (if-let [f (find-translator cmd)]
     (f cmd)
     nil))
+
+(defn translate-with-comment
+  "Translates cmd into hack assembly and adds a comment on top
+  of the resulting code. Return nil if command is not valid."
+  [{:keys [source] :as cmd}]
+  (if-let [out (translate cmd)]
+    (str "// " source "\n" out)
+    nil))
