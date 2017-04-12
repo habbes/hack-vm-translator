@@ -114,6 +114,14 @@ M=D
       (handler "@SP\nA=M\nD=M\n")
       (handler "D=D+1\n")
       (is (= (.toString wrtr)
+             "@SP\nA=M\nD=M\nD=D+1\n"))))
+  (testing "Skips nil"
+    (let [wrtr (java.io.StringWriter.)
+          handler (create-writer-output-handler wrtr)]
+      (handler "@SP\nA=M\nD=M\n")
+      (handler nil)
+      (handler "D=D+1\n")
+      (is (= (.toString wrtr)
              "@SP\nA=M\nD=M\nD=D+1\n")))))
 
 (deftest translate-source-test

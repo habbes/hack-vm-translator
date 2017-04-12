@@ -29,7 +29,8 @@
   "Returns an output-handler which writes ouput
   to the specified wrtr"
   [wrtr]
-  (fn [out] (.write wrtr out)))
+  (fn [out]
+    (if-let [out out] (.write wrtr out))))
 
 (defn translate-source
   "Reads vm source code from rdr and writes the output
