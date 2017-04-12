@@ -98,3 +98,10 @@ M=D
       (handler "D=D+1\n")
       (is (= (.toString wrtr)
              "@SP\nA=M\nD=M\nD=D+1\n")))))
+
+(deftest translate-source-test
+  (testing "Translates vm source from reader and writer asm output to writer"
+    (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source))
+          wrtr (java.io.StringWriter.)]
+      (translate-source rdr wrtr)
+      (is (= (.toString wrtr) sample-output)))))
