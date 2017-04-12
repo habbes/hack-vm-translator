@@ -10,7 +10,7 @@
   Returns nil if source code is invalid."
   [line]
   (if-let [cmd (parser/parse-command line)]
-    (code/translate-with-comment line)
+    (code/translate-with-comment cmd)
     nil))
 
 (defn translate-source
