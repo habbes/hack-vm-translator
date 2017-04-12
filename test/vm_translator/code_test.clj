@@ -14,3 +14,18 @@
                               "D=M"
                               "@SP"
                               "M=D"])))))
+
+(deftest translate-push-contant-test
+  (let [cmd {:source "push constant 17"
+             :command "push"
+             :segment "constant"
+             :index "17"}
+        code (translate-push-constant cmd)]
+    (is (= code (s/join "\n" ["@17"
+                              "D=A"
+                              "@SP"
+                              "A=M"
+                              "M=D"
+                              "D=A+1"
+                              "@SP"
+                              "M=D"])))))
