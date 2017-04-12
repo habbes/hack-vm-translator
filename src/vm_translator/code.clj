@@ -13,7 +13,7 @@
                 "A=A-1"
                 "M=M+D"
                 ; update the stack pointer
-                "D=M"
+                "D=A"
                 "@SP"
                 "M=D"]))
 
