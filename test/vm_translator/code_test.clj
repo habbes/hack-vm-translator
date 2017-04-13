@@ -45,6 +45,25 @@
                                 "@SP"
                                 "M=D"])))))
 
+  (testing "or command"
+    (let [cmd {:source "or" :command "or"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "D=M"
+                                "A=A-1"
+                                "M=D&M"
+                                "D=A+1"
+                                "@SP"
+                                "M=D"])))))
+
+  (testing "not command"
+    (let [cmd {:source "not" :command "not"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "M=!M"])))))
+
   (testing "push constant command"
     (let [cmd {:source "push constant 17"
                :command "push"

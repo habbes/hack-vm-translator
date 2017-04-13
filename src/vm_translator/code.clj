@@ -42,6 +42,13 @@
                 "@SP"
                 "M=D"]))
 
+(defn- point-a-to-stack-top
+  "Generates asm code to set the A register to point to
+  the value at the top of the stack."
+  []
+  (s/join "\n" ["@SP"
+                "A=M-1"]))
+
 ;; translators for the different commands
 
 (defn translate-add
@@ -61,8 +68,7 @@
 (defn translate-neg
   "Translates the 'neg' vm command to hack assembly"
   [cmd]
-  (s/join "\n" ["@SP"
-                "A=M-1"
+  (s/join "\n" [(point-a-to-stack-top)
                 "M=-M"]))
 
 (defn translate-and
@@ -72,6 +78,21 @@
   (s/join "\n" [(pop-to-d-dec-a)
                 "M=D|M"
                 (inc-a-update-sp)]))
+
+(defn translate-or
+  "Translates the 'or' vm command to hack assembly.
+  0x0000 is true and 0xffff is false."
+  [cmd]
+  (s/join "\n" [(pop-to-d-dec-a)
+                "M=D&M"
+                (inc-a-update-sp)]))
+
+(defn translate-not
+  "Translates the 'not' vm command to hack assembly.
+  0x0000 is true and 0xffff is false."
+  [cmd]
+  (s/join "\n" [(point-a-to-stack-top)
+                "M=!M"]))
 
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
@@ -97,6 +118,8 @@
     "sub" translate-sub
     "neg" translate-neg
     "and" translate-and
+    "or" translate-or
+    "not" translate-not
     "push" translate-push
     nil))
 
