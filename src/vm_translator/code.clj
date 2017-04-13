@@ -1,42 +1,70 @@
 (ns vm-translator.code
   (:require [clojure.string :as s]))
 
+;; helpers to generate common hack asm code snippets
+(defn- pop-to-d
+  "Generates asm code to pop value from stack to D register"
+  []
+  (s/join "\n" ["@SP"
+                "A=M-1"
+                "D=M"]))
+
+(defn- dec-a
+  "Generates asm code to decrement A register"
+  []
+  "A=A-1")
+
+(defn- pop-to-d-dec-a
+  "Generates asm code that pops value from stack to D register
+  then decrements A register"
+  []
+  (s/join "\n" [(pop-to-d)
+                (dec-a)]))
+
+(defn- push-from-d
+  "Generates asm code to push value to stack from D register"
+  []
+  (s/join "\n" ["@SP"
+                "A=M"
+                "M=D"]))
+
+(defn- inc-sp
+  "Generates asm code to increment stack pointer"
+  []
+  (s/join "\n" ["@SP"
+                "M=M+1"]))
+
+(defn- inc-a-update-sp
+  "Generates asm code to update the stack pointer by first
+  incrementing the A register"
+  []
+  (s/join "\n" ["D=A+1"
+                "@SP"
+                "M=D"]))
+
 (defn translate-add
   "Translates the'add' vm command to hack assembly"
   [cmd]
-  (s/join "\n" [; pop value from stack to D
-                "@SP"
-                "A=M-1"
-                "D=M"
+  (s/join "\n" [(pop-to-d)
                 ; pop the next value in the stack
                 ; add D and store the sum in the stack
                 "A=A-1"
                 "M=D+M"
-                ; update the stack pointer
-                "D=A+1"
-                "@SP"
-                "M=D"]))
+                (inc-a-update-sp)]))
 
 (defn translate-sub
   "Translates the 'sub' vm command to hack assembly"
   [cmd]
-  (s/join "\n" ["@SP"
-                "A=M-1"
-                "D=M"
+  (s/join "\n" [(pop-to-d)
                 "A=A-1"
                 "M=M-D"
-                "D=A+1"
-                "@SP"
-                "M=D"]))
+                (inc-a-update-sp)]))
 (defn translate-neg
   "Translates the 'neg' vm command to hack assembly"
   [cmd]
   (s/join "\n" ["@SP"
                 "A=M-1"
-                "M=-M"
-                "D=A+1"
-                "@SP"
-                "M=D"]))
+                "M=-M"]))
 
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
@@ -44,14 +72,8 @@
   (s/join "\n" [; store constant in D
                 (str "@" index)
                 "D=A"
-                ; push value to stack
-                "@SP"
-                "A=M"
-                "M=D"
-                ; update stack pointer
-                "D=A+1"
-                "@SP"
-                "M=D"]))
+                (push-from-d)
+                (inc-sp)]))
 
 (defn translate-push
   "Translates the 'push' command"

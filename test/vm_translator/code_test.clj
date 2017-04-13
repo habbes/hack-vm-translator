@@ -31,10 +31,7 @@
           code (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
-                                "M=-M"
-                                "D=A+1"
-                                "@SP"
-                                "M=D"])))))
+                                "M=-M"])))))
 
   (testing "push constant command"
     (let [cmd {:source "push constant 17"
@@ -47,9 +44,8 @@
                                 "@SP"
                                 "A=M"
                                 "M=D"
-                                "D=A+1"
                                 "@SP"
-                                "M=D"])))))
+                                "M=M+1"])))))
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
@@ -69,6 +65,5 @@
                                 "@SP"
                                 "A=M"
                                 "M=D"
-                                "D=A+1"
                                 "@SP"
-                                "M=D"]))))))
+                                "M=M+1"]))))))
