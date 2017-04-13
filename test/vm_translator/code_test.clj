@@ -33,6 +33,18 @@
                                 "A=M-1"
                                 "M=-M"])))))
 
+  (testing "and command"
+    (let [cmd {:source "and" :command "and"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "D=M"
+                                "A=A-1"
+                                "M=D|M"
+                                "D=A+1"
+                                "@SP"
+                                "M=D"])))))
+
   (testing "push constant command"
     (let [cmd {:source "push constant 17"
                :command "push"

@@ -42,6 +42,8 @@
                 "@SP"
                 "M=D"]))
 
+;; translators for the different commands
+
 (defn translate-add
   "Translates the'add' vm command to hack assembly"
   [cmd]
@@ -59,12 +61,20 @@
                 "A=A-1"
                 "M=M-D"
                 (inc-a-update-sp)]))
+
 (defn translate-neg
   "Translates the 'neg' vm command to hack assembly"
   [cmd]
   (s/join "\n" ["@SP"
                 "A=M-1"
                 "M=-M"]))
+
+(defn translate-and
+  "Transaltes the 'add' vm command to hack assembly"
+  [cmd]
+  (s/join "\n" [(pop-to-d-dec-a)
+                "M=D|M"
+                (inc-a-update-sp)]))
 
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
@@ -89,6 +99,7 @@
     "add" translate-add
     "sub" translate-sub
     "neg" translate-neg
+    "and" translate-and
     "push" translate-push
     nil))
 
