@@ -47,18 +47,14 @@
 (defn translate-add
   "Translates the'add' vm command to hack assembly"
   [cmd]
-  (s/join "\n" [(pop-to-d)
-                ; pop the next value in the stack
-                ; add D and store the sum in the stack
-                "A=A-1"
+  (s/join "\n" [(pop-to-d-dec-a)
                 "M=D+M"
                 (inc-a-update-sp)]))
 
 (defn translate-sub
   "Translates the 'sub' vm command to hack assembly"
   [cmd]
-  (s/join "\n" [(pop-to-d)
-                "A=A-1"
+  (s/join "\n" [(pop-to-d-dec-a)
                 "M=M-D"
                 (inc-a-update-sp)]))
 
@@ -70,7 +66,8 @@
                 "M=-M"]))
 
 (defn translate-and
-  "Transaltes the 'add' vm command to hack assembly"
+  "Transaltes the 'and' vm command to hack assembly.
+  0x0000 is true and 0xffff is false."
   [cmd]
   (s/join "\n" [(pop-to-d-dec-a)
                 "M=D|M"
