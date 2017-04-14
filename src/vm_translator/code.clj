@@ -73,23 +73,23 @@
 
 (defn translate-and
   "Transaltes the 'and' vm command to hack assembly.
-  0x0000 is true and 0xffff is false."
-  [cmd]
-  (s/join "\n" [(pop-to-d-dec-a)
-                "M=D|M"
-                (inc-a-update-sp)]))
-
-(defn translate-or
-  "Translates the 'or' vm command to hack assembly.
-  0x0000 is true and 0xffff is false."
+  0x0000 is false and 0xffff is true."
   [cmd]
   (s/join "\n" [(pop-to-d-dec-a)
                 "M=D&M"
                 (inc-a-update-sp)]))
 
+(defn translate-or
+  "Translates the 'or' vm command to hack assembly.
+  0x0000 is false and 0xffff is true."
+  [cmd]
+  (s/join "\n" [(pop-to-d-dec-a)
+                "M=D|M"
+                (inc-a-update-sp)]))
+
 (defn translate-not
   "Translates the 'not' vm command to hack assembly.
-  0x0000 is true and 0xffff is false."
+  0x0000 is false and 0xffff is true."
   [cmd]
   (s/join "\n" [(point-a-to-stack-top)
                 "M=!M"]))
