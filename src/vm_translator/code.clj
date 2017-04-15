@@ -4,6 +4,11 @@
 ;; base address of temp segment
 (def TEMP-BASE 5)
 
+;; map linking pointer segment index to corresponding base pointer
+(def pointer-segment-index-map
+  {0 "THIS"
+   1 "THAT"})
+
 ;; helpers to generate common hack asm code snippets
 (defn- pop-to-d
   "Generates asm code to pop value from stack to D register"
@@ -43,6 +48,15 @@
   []
   (s/join "\n" [(push-from-d)
                 (inc-sp)]))
+
+(defn- pop-d-dec-sp
+  "Generates asm code to pop value from stack into D and
+  decrement stack pointer."
+  []
+  (s/join "\n" ["@SP"
+                "M=M-1"
+                "A=M"
+                "D=M"]))
 
 (defn- dec-sp
   "Generates asm code to decrement stack pointer"
@@ -210,6 +224,34 @@
                 "M=D"
                 (dec-sp)]))
 
+(defn- translate-push-pointer-base
+  "Translate 'push pointer' based on the specified base pointer.
+  base should be THIS or THAT"
+  [base]
+  (s/join "\n" [(at-address base)
+                "D=M"
+                (push-d-inc-sp)]))
+
+(defn- translate-pop-pointer-base
+  "Translate 'pop pointer' based on the specified base pointer.
+  base should be THIS or THAT"
+  [base]
+  (s/join "\n" [(pop-d-dec-sp)
+                (at-address base)
+                "M=D"]))
+
+(defn translate-push-pointer
+  "Translate the 'push pointer' command"
+  [{:keys [index]}]
+  (let [base (get pointer-segment-index-map index)]
+    (translate-push-pointer-base base)))
+
+
+(defn translate-pop-pointer
+  [{:keys [index]}]
+  (let [base (get pointer-segment-index-map index)]
+    (translate-pop-pointer-base base)))
+
 (defn- translate-generic-push
   "Translates the 'push' command for local, arg, this, that segments"
   [base index]
@@ -236,7 +278,8 @@
     "argument" (translate-generic-push "ARG" index)
     "this" (translate-generic-push "THIS" index)
     "that" (translate-generic-push "THAT" index)
-    "temp" (translate-push-temp cmd)))
+    "temp" (translate-push-temp cmd)
+    "pointer" (translate-push-pointer cmd)))
 
 (defn translate-pop
   "Translates 'pop' command to hack assembly."
@@ -246,7 +289,8 @@
     "argument" (translate-generic-pop "ARG" index)
     "this" (translate-generic-pop "THIS" index)
     "that" (translate-generic-pop "THAT" index)
-    "temp" (translate-pop-temp cmd)))
+    "temp" (translate-pop-temp cmd)
+    "pointer" (translate-pop-pointer cmd)))
 
 (defn find-translator
   "Finds the appropriate function to translate the given command"

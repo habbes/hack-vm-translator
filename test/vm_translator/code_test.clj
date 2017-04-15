@@ -223,6 +223,57 @@
                                 "@SP"
                                 "M=M-1"])))))
 
+  (testing "push pointer command"
+    (let [cmd {:source "push pointer 0"
+               :command "push"
+               :segment "pointer"
+               :index 0}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@THIS"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"]))))
+    (let [cmd {:source "push pointer 1"
+               :command "push"
+               :segment "pointer"
+               :index 1}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@THAT"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"])))))
+
+  (testing "pop pointer command"
+    (let [cmd {:source "pop pointer 0"
+               :command "pop"
+               :segment "pointer"
+               :index 0}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "M=M-1"
+                                "A=M"
+                                "D=M"
+                                "@THIS"
+                                "M=D"]))))
+
+    (let [cmd {:source "pop pointer 1"
+               :command "pop"
+               :segment "pointer"
+               :index 1}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "M=M-1"
+                                "A=M"
+                                "D=M"
+                                "@THAT"
+                                "M=D"])))))
+
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
