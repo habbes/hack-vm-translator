@@ -80,7 +80,7 @@
         (is (= nil cmd))))))
 
 (deftest parse-command-with-def-matchers
-  (let [segments ["arg" "this" "that" "local"
+  (let [segments ["argument" "this" "that" "local"
                   "constant" "temp" "static" "pointer"]]
     (testing "push commands"
       (doseq [segment segments]
@@ -134,6 +134,6 @@
       (is (= nil cmd)))
     (let [source "push local" cmd (parse-command source)]
       (is (= nil cmd)))
-    (let [source "this is not a command// push arg 1" cmd (parse-command source)]
+    (let [source "this is not a command// push argument 1" cmd (parse-command source)]
       (is (= nil cmd)))))
 

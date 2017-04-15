@@ -146,9 +146,9 @@
                                 "@SP"
                                 "M=M+1"])))))
 
-  (testing "push local/arg/this/that commands"
+  (testing "push local/argument/this/that commands"
     (let [segment-var-map {"local" "LCL"
-                           "arg" "ARG"
+                           "argument" "ARG"
                            "this" "THIS"
                            "that" "THAT"}]
       (doseq [[segment base] segment-var-map]
@@ -168,9 +168,9 @@
                                     "@SP"
                                     "M=M+1"])))))))
 
-  (testing "pop local/arg/this/that commands"
+  (testing "pop local/argument/this/that commands"
     (let [segment-var-map {"local" "LCL"
-                           "arg" "ARG"
+                           "argument" "ARG"
                            "this" "THIS"
                            "that" "THAT"}]
       (doseq [[segment base] segment-var-map]

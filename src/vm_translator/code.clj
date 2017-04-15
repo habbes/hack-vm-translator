@@ -233,7 +233,7 @@
   (case segment
     "constant" (translate-push-constant cmd)
     "local" (translate-generic-push "LCL" index)
-    "arg" (translate-generic-push "ARG" index)
+    "argument" (translate-generic-push "ARG" index)
     "this" (translate-generic-push "THIS" index)
     "that" (translate-generic-push "THAT" index)
     "temp" (translate-push-temp cmd)))
@@ -243,7 +243,7 @@
   [{:keys [segment index] :as cmd}]
   (case segment
     "local" (translate-generic-pop "LCL" index)
-    "arg" (translate-generic-pop "ARG" index)
+    "argument" (translate-generic-pop "ARG" index)
     "this" (translate-generic-pop "THIS" index)
     "that" (translate-generic-pop "THAT" index)
     "temp" (translate-pop-temp cmd)))

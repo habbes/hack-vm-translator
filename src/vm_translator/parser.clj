@@ -5,7 +5,7 @@
 ; regex used to parse arithmetic and logic commands
 (def arithmetic-re #"(add|sub|neg|eq|gt|lt|and|or|not)")
 ; regex used to parse push and pop commands
-(def push-pop-re #"(push|pop) (arg|local|this|that|constant|static|temp|pointer) (\d+)")
+(def push-pop-re #"(push|pop) (argument|local|this|that|constant|static|temp|pointer) (\d+)")
 
 (defn clean-line
   "Cleans source line, removing comments and extra whitespace"
