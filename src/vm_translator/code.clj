@@ -1,6 +1,12 @@
 (ns vm-translator.code
   (:require [clojure.string :as s]))
 
+(def base-segment-addresses
+  {"local" "LCL"
+   "arg" "ARG"
+   "this" "THIS"
+   "that" "THAT"})
+
 ;; helpers to generate common hack asm code snippets
 (defn- pop-to-d
   "Generates asm code to pop value from stack to D register"
@@ -59,6 +65,37 @@
   "Generates asm code to set A register to specified address."
   [address]
   (str "@" address))
+
+(defn- store-segment-val-in-d
+  "Generates asm code that stores M[base + index] in D."
+  [base index]
+  (s/join "\n" [(at-address index)
+                "D=A"
+                (at-address base)
+                "A=D+M"
+                "D=M"]))
+
+(defn- store-segment-addr-in-d
+  "Generates asm code that stores address base + index in D."
+  [base index]
+  (s/join "\n" [(at-address index)
+                "D=A"
+                (at-address base)
+                "A=D+M"
+                "D=A"]))
+
+(defn- store-d-in-r12-addr
+  "Generates asm code that stores D in M[R12]"
+  []
+  (s/join "\n" ["@R12"
+                "A=M"
+                "M=D"]))
+
+(defn- store-d-in-r12
+  "Generates asm code that stores D in R12."
+  []
+  (s/join "\n" ["@R12"
+                "M=D"]))
 
 ;; translators for the different commands
 
@@ -155,12 +192,41 @@
                 (push-from-d)
                 (inc-sp)]))
 
+(defn- translate-generic-push
+  "Translates the 'push' command for local, arg, this, that segments"
+  [base index]
+  (s/join "\n" [(store-segment-val-in-d base index)
+                (push-from-d)
+                (inc-sp)]))
+
+(defn- translate-generic-pop
+  "Translates the 'pop' command for local, arg, this, that segments."
+  [base index]
+  (s/join "\n" [(store-segment-addr-in-d base index)
+                (store-d-in-r12)
+                (pop-to-d)
+                (store-d-in-r12-addr)
+                (dec-sp)]))
+
 (defn translate-push
   "Translates the 'push' command"
   ; TODO implement for other segments and for nil
-  [{:keys [segment] :as cmd}]
+  [{:keys [segment index] :as cmd}]
   (case segment
-    "constant" (translate-push-constant cmd)))
+    "constant" (translate-push-constant cmd)
+    "local" (translate-generic-push "LCL" index)
+    "arg" (translate-generic-push "ARG" index)
+    "this" (translate-generic-push "THIS" index)
+    "that" (translate-generic-push "THAT" index)))
+
+(defn translate-pop
+  "Translates 'pop' command to hack assembly."
+  [{:keys [segment index] :as cmd}]
+  (case segment
+    "local" (translate-generic-pop "LCL" index)
+    "arg" (translate-generic-pop "ARG" index)
+    "this" (translate-generic-pop "THIS" index)
+    "that" (translate-generic-pop "THAT" index)))
 
 (defn find-translator
   "Finds the appropriate function to translate the given command"
@@ -176,6 +242,7 @@
     "lt" translate-lt
     "not" translate-not
     "push" translate-push
+    "pop" translate-pop
     nil))
 
 (defn translate
