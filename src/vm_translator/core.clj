@@ -1,6 +1,7 @@
 (ns vm-translator.core
   (:require [vm-translator.parser :as parser]
             [vm-translator.code :as code]
+            [vm-translator.context :as context]
             [clojure.string :as s]
             [clojure.java.io :as io])
   (:gen-class))
@@ -8,22 +9,27 @@
 (defn translate-line
   "Translates line of vm source code to hack assembly code.
   Returns nil if source code is invalid."
-  [line]
+  [line ctx]
   (if-let [cmd (parser/parse-command line)]
     (str
-      (code/translate-with-comment cmd)
+      (code/translate-with-comment (conj cmd [:context ctx]))
       "\n")
     nil))
 
 (defn translate-lines
   "Translates each line in the lines seq and pass each output
   to the output handler fn"
-  [lines output-handler]
-  (loop [count 0]
-    (if-let [line (nth lines count nil)]
-      (let [out (translate-line line)]
+  [lines output-handler ctx]
+  (loop [n 0 ctx ctx]
+    (if-let [line (nth lines n nil)]
+      (let [out (translate-line line ctx)
+            ;TODO this is really messy code, please cleanup
+            inst-count (max 0 (- (if-let [out out] (count (s/split-lines out)) 0) 1))
+            new-ctx (-> ctx
+                        context/inc-line
+                        (context/inc-instruction inst-count))]
         (output-handler out)
-        (recur (inc count))))))
+        (recur (inc n) new-ctx)))))
 
 (defn create-writer-output-handler
   "Returns an output-handler which writes ouput
@@ -37,8 +43,9 @@
   assembly code into wrtr"
   [rdr wrtr]
   (let [lines (line-seq rdr)
-        handler (create-writer-output-handler wrtr)]
-    (translate-lines lines handler)))
+        handler (create-writer-output-handler wrtr)
+        ctx (context/initialize)]
+    (translate-lines lines handler ctx)))
 
 (defn get-output-path
   "Get the output path for the output file based on

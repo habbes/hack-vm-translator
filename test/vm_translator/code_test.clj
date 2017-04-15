@@ -66,7 +66,7 @@
 
   (testing "eq command"
     (let [cmd {:source "eq" :command "eq"
-               :context {:instruction-count 5}}
+               :context {:instruction-number 5}}
           code (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
@@ -90,7 +90,7 @@
 
   (testing "gt command"
     (let [cmd {:source "gt" :command "gt"
-               :context {:instruction-count 4}}
+               :context {:instruction-number 4}}
           code (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
@@ -114,7 +114,7 @@
 
   (testing "lt command"
     (let [cmd {:source "lt" :command "lt"
-               :context {:instruction-count 6}}
+               :context {:instruction-number 6}}
           code (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"

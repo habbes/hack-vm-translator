@@ -5,8 +5,8 @@
 (deftest initialize-test
   (testing "Initializes new context map"
     (let [ctx (initialize)]
-      (is (= ctx {:line-number 1
-                  :instruction-number 0})))))
+      (is (= ctx {:line-number 0
+                  :instruction-number -1})))))
 
 (deftest inc-line-test
   (testing "Increments line number by 1"

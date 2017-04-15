@@ -25,27 +25,69 @@ D=A
 @SP
 A=M
 M=D
-D=A+1
 @SP
-M=D
+M=M+1
 // push constant 3
 @3
 D=A
 @SP
 A=M
 M=D
-D=A+1
 @SP
-M=D
+M=M+1
 // add
 @SP
 A=M-1
 D=M
 A=A-1
-M=M+D
+M=D+M
 D=A+1
 @SP
 M=D
+")
+
+(def sample-source-eq
+"push constant 10
+push constant 10
+eq")
+
+(def sample-output-eq
+"// push constant 10
+@10
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// push constant 10
+@10
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// eq
+@SP
+A=M-1
+D=M
+A=A-1
+D=M-D
+@23
+D;JEQ
+@26
+0;JMP
+D=-1
+@27
+0;JMP
+D=0
+@SP
+A=M-1
+A=A-1
+M=D
+@SP
+M=M-1
 ")
 
 (deftest get-output-path-test
@@ -69,20 +111,23 @@ M=D
 
 (deftest translate-line-test
   (testing "translates source vm line to hack assembly with comment"
-    (let [line "push constant 3" out (translate-line line)]
+    (let [line "push constant 3"
+          ctx {:instruction-number 0 :line-number 1}
+          out (translate-line line ctx)]
       (is (= out (s/join "\n" ["// push constant 3"
                                "@3"
                                "D=A"
                                "@SP"
                                "A=M"
                                "M=D"
-                               "D=A+1"
                                "@SP"
-                               "M=D"
+                               "M=M+1"
                                ""])))))
 
   (testing "Returns nil on when source is invalid"
-    (let [line "not valid command" out (translate-line line)]
+    (let [line "not valid command"
+          ctx {:instruction-number 0 :line-number 1}
+          out (translate-line line ctx)]
       (is (= out nil)))))
 
 (defn create-sample-output-handler
@@ -96,16 +141,26 @@ M=D
   (testing "Translate seq of source lines into asm output string"
     (let [lines (s/split-lines sample-source)
           output (atom "")
-          handler (create-sample-output-handler output)]
-      (translate-lines lines handler)
+          handler (create-sample-output-handler output)
+          ctx {:line-number 1 :instruction-number 0}]
+      (translate-lines lines handler ctx)
       (is (= @output sample-output))))
 
   (testing "Translate lines including comments"
     (let [lines (s/split-lines sample-source-with-comments)
           output (atom "")
-          handler (create-sample-output-handler output)]
-      (translate-lines lines handler)
-      (is (= @output sample-output)))))
+          handler (create-sample-output-handler output)
+          ctx {:line-number 1 :instruction-number 0}]
+      (translate-lines lines handler ctx)
+      (is (= @output sample-output))))
+
+  (testing "Translate lines including comparison commands"
+    (let [lines (s/split-lines sample-source-eq)
+          output (atom "")
+          handler (create-sample-output-handler output)
+          ctx {:line-number 0 :instruction-number -1}]
+      (translate-lines lines handler ctx)
+      (is (= @output sample-output-eq)))))
 
 (deftest create-writer-output-handler-test
   (testing "Creates a handler that writers output to an io writer"
@@ -129,4 +184,10 @@ M=D
     (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source))
           wrtr (java.io.StringWriter.)]
       (translate-source rdr wrtr)
-      (is (= (.toString wrtr) sample-output)))))
+      (is (= (.toString wrtr) sample-output))))
+
+  (testing "Translates vm source code containing comparison commands"
+    (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source-eq))
+          wrtr (java.io.StringWriter.)]
+      (translate-source rdr wrtr)
+      (is (= (.toString wrtr) sample-output-eq)))))

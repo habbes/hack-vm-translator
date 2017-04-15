@@ -110,7 +110,7 @@
   The jump statement is the difference between the different
   comparison commands.
   0x0000 is false and 0xffff is true."
-  [{{ic :instruction-count} :context} jump]
+  [{{ic :instruction-number} :context} jump]
   (s/join "\n" [(pop-to-d-dec-a)
                 "D=M-D"
                 (at-address (+ ic 10))

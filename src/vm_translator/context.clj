@@ -2,8 +2,8 @@
 
 (defn initialize
   []
-  {:line-number 1
-   :instruction-number 0})
+  {:line-number 0
+   :instruction-number -1})
 
 (defn inc-line
   [ctx]
