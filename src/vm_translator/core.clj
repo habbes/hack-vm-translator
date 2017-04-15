@@ -12,7 +12,7 @@
   [line ctx]
   (if-let [cmd (parser/parse-command line)]
     (str
-      (code/translate-with-comment (conj cmd [:context ctx]))
+      (code/translate-with-comment (assoc cmd :context ctx))
       "\n")
     nil))
 
