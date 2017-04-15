@@ -42,12 +42,12 @@
           (parse-push-pop-command
             {:source "push local 1" :command "push"} ["local" "1"])]
       (is (= cmd {:source "push local 1" :command "push"
-                  :segment "local" :index "1"})))
+                  :segment "local" :index 1})))
     (let [cmd
           (parse-push-pop-command
             {:source "pop that 5" :command "pop"} ["that" "5"])]
       (is (= cmd {:source "pop that 5" :command "pop"
-                  :segment "that" :index "5"})))))
+                  :segment "that" :index 5})))))
 
 (deftest parse-if-match-test
   (let [re #"(\w+) (\w+)"
@@ -89,7 +89,7 @@
           (is (= {:source source
                   :command "push"
                   :segment segment
-                  :index "2"}
+                  :index 2}
                  cmd)))))
     (testing "pop commands"
       (doseq [segment segments]
@@ -98,7 +98,7 @@
           (is (= {:source source
                   :command "pop"
                   :segment segment
-                  :index "2"}
+                  :index 2}
                  cmd))))))
   (testing "arithmetic/logic commands"
     (doseq [source ["add" "sub" "neg" "eq" "gt" "lt" "and" "or" "not"]]
@@ -111,7 +111,7 @@
       (is (= {:source "push local 10"
               :command "push"
               :segment "local"
-              :index "10"}
+              :index 10}
              cmd)))
     (let [source "\tadd  " cmd (parse-command source)]
       (is (= {:source "add"
@@ -121,7 +121,7 @@
       (is (= {:source "pop pointer 0"
               :command "pop"
               :segment "pointer"
-              :index "0"}
+              :index 0}
               cmd))))
   (testing "returns nil if no command or no match"
     (let [source "" cmd (parse-command source)]

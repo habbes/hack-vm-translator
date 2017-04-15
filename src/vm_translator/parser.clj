@@ -24,7 +24,7 @@
 (defn parse-push-pop-command
   "Parses push or pop command"
   [cmd-ctx [segment index]]
-  (assoc cmd-ctx :segment segment :index index))
+  (assoc cmd-ctx :segment segment :index (Integer/parseInt index)))
 
 ;Pairs of regexes and their corresponding parser fns
 (def re-parser-pairs
