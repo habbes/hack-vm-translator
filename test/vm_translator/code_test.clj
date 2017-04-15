@@ -12,9 +12,8 @@
                                 "D=M"
                                 "A=A-1"
                                 "M=D+M"
-                                "D=A+1"
                                 "@SP"
-                                "M=D"])))))
+                                "M=M-1"])))))
   (testing "sub command"
     (let [cmd {:source "sub" :command "sub"}
           code (translate cmd)]
@@ -23,9 +22,8 @@
                                 "D=M"
                                 "A=A-1"
                                 "M=M-D"
-                                "D=A+1"
                                 "@SP"
-                                "M=D"])))))
+                                "M=M-1"])))))
   (testing "neg command"
     (let [cmd {:source "neg" :command "neg"}
           code (translate cmd)]
@@ -41,9 +39,8 @@
                                 "D=M"
                                 "A=A-1"
                                 "M=D&M"
-                                "D=A+1"
                                 "@SP"
-                                "M=D"])))))
+                                "M=M-1"])))))
 
   (testing "or command"
     (let [cmd {:source "or" :command "or"}
@@ -53,9 +50,8 @@
                                 "D=M"
                                 "A=A-1"
                                 "M=D|M"
-                                "D=A+1"
                                 "@SP"
-                                "M=D"])))))
+                                "M=M-1"])))))
 
   (testing "not command"
     (let [cmd {:source "not" :command "not"}

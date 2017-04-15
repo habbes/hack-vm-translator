@@ -67,14 +67,14 @@
   [cmd]
   (s/join "\n" [(pop-to-d-dec-a)
                 "M=D+M"
-                (inc-a-update-sp)]))
+                (dec-sp)]))
 
 (defn translate-sub
   "Translates the 'sub' vm command to hack assembly"
   [cmd]
   (s/join "\n" [(pop-to-d-dec-a)
                 "M=M-D"
-                (inc-a-update-sp)]))
+                (dec-sp)]))
 
 (defn translate-neg
   "Translates the 'neg' vm command to hack assembly"
@@ -88,7 +88,7 @@
   [cmd]
   (s/join "\n" [(pop-to-d-dec-a)
                 "M=D&M"
-                (inc-a-update-sp)]))
+                (dec-sp)]))
 
 (defn translate-or
   "Translates the 'or' vm command to hack assembly.
@@ -96,7 +96,7 @@
   [cmd]
   (s/join "\n" [(pop-to-d-dec-a)
                 "M=D|M"
-                (inc-a-update-sp)]))
+                (dec-sp)]))
 
 (defn translate-not
   "Translates the 'not' vm command to hack assembly.
