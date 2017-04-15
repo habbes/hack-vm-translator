@@ -64,6 +64,78 @@
                                 "A=M-1"
                                 "M=!M"])))))
 
+  (testing "eq command"
+    (let [cmd {:source "eq" :command "eq"
+               :context {:instruction-count 5}}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "D=M"
+                                "A=A-1"
+                                "D=M-D"
+                                "@15"
+                                "D;JEQ"
+                                "@18"
+                                "0;JMP"
+                                "D=-1"
+                                "@19"
+                                "0;JMP"
+                                "D=0"
+                                "@SP"
+                                "A=M-1"
+                                "A=A-1"
+                                "M=D"
+                                "@SP"
+                                "M=M-1"])))))
+
+  (testing "gt command"
+    (let [cmd {:source "gt" :command "gt"
+               :context {:instruction-count 4}}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "D=M"
+                                "A=A-1"
+                                "D=M-D"
+                                "@14"
+                                "D;JGT"
+                                "@17"
+                                "0;JMP"
+                                "D=-1"
+                                "@18"
+                                "0;JMP"
+                                "D=0"
+                                "@SP"
+                                "A=M-1"
+                                "A=A-1"
+                                "M=D"
+                                "@SP"
+                                "M=M-1"])))))
+
+  (testing "lt command"
+    (let [cmd {:source "lt" :command "lt"
+               :context {:instruction-count 6}}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "D=M"
+                                "A=A-1"
+                                "D=M-D"
+                                "@16"
+                                "D;JLT"
+                                "@19"
+                                "0;JMP"
+                                "D=-1"
+                                "@20"
+                                "0;JMP"
+                                "D=0"
+                                "@SP"
+                                "A=M-1"
+                                "A=A-1"
+                                "M=D"
+                                "@SP"
+                                "M=M-1"])))))
+
   (testing "push constant command"
     (let [cmd {:source "push constant 17"
                :command "push"

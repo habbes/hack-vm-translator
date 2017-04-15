@@ -34,6 +34,12 @@
   (s/join "\n" ["@SP"
                 "M=M+1"]))
 
+(defn- dec-sp
+  "Generates asm code to decrement stack pointer"
+  []
+  (s/join "\n" ["@SP"
+                "M=M-1"]))
+
 (defn- inc-a-update-sp
   "Generates asm code to update the stack pointer by first
   incrementing the A register"
@@ -48,6 +54,11 @@
   []
   (s/join "\n" ["@SP"
                 "A=M-1"]))
+
+(defn- at-address
+  "Generates asm code to set A register to specified address."
+  [address]
+  (str "@" address))
 
 ;; translators for the different commands
 
@@ -94,6 +105,47 @@
   (s/join "\n" [(point-a-to-stack-top)
                 "M=!M"]))
 
+(defn- translate-comp
+  "Translate a comparison vm command to hack assembly.
+  The jump statement is the difference between the different
+  comparison commands.
+  0x0000 is false and 0xffff is true."
+  [{{ic :instruction-count} :context} jump]
+  (s/join "\n" [(pop-to-d-dec-a)
+                "D=M-D"
+                (at-address (+ ic 10))
+                (str "D;" jump)
+                (at-address (+ ic 13))
+                "0;JMP"
+                "D=-1"
+                (at-address (+ ic 14))
+                "0;JMP"
+                "D=0"
+                (point-a-to-stack-top)
+                "A=A-1"
+                "M=D"
+                (dec-sp)]))
+
+
+(defn translate-eq
+  "Translates the 'eq' vm command to hack assembly.
+  0x0000 is false and 0xffff is true."
+  [cmd]
+  (translate-comp cmd "JEQ"))
+
+(defn translate-gt
+  "Translates the 'gt' vm command to hack assembly.
+  0x0000 is false and 0xffff is true."
+  [cmd]
+  (translate-comp cmd "JGT"))
+
+(defn translate-lt
+  "Translate the 'lt' vm command to hack assembly.
+  0x0000 is false and 0xffff is true."
+  [cmd]
+  (translate-comp cmd "JLT"))
+
+
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
   [{:keys [index] :as cmd}]
@@ -119,6 +171,9 @@
     "neg" translate-neg
     "and" translate-and
     "or" translate-or
+    "eq" translate-eq
+    "gt" translate-gt
+    "lt" translate-lt
     "not" translate-not
     "push" translate-push
     nil))
