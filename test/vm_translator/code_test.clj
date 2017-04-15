@@ -146,46 +146,54 @@
                                 "@SP"
                                 "M=M+1"])))))
 
-  (testing "push local command"
-    (let [cmd {:source "push local 2"
-               :command "push"
-               :segment "local"
-               :index 2}
-          code (translate cmd)]
-      (is (= code (s/join "\n" ["@2"
-                                "D=A"
-                                "@LCL"
-                                "A=D+M"
-                                "D=M"
-                                "@SP"
-                                "A=M"
-                                "M=D"
-                                "@SP"
-                                "M=M+1"])))))
+  (testing "push local/arg/this/that commands"
+    (let [segment-var-map {"local" "LCL"
+                           "arg" "ARG"
+                           "this" "THIS"
+                           "that" "THAT"}]
+      (doseq [[segment base] segment-var-map]
+        (let [cmd {:source (str "push " segment " 3")
+                   :command "push"
+                   :segment segment
+                   :index 3}
+              code (translate cmd)]
+          (is (= code (s/join "\n" ["@3"
+                                    "D=A"
+                                    (str "@" base)
+                                    "A=D+M"
+                                    "D=M"
+                                    "@SP"
+                                    "A=M"
+                                    "M=D"
+                                    "@SP"
+                                    "M=M+1"])))))))
 
-  (testing "pop local command"
-    (let [cmd {:source "pop local 3"
-               :command "pop"
-               :segment "local"
-               :index 3}
-          code (translate cmd)]
-      (is (= code (s/join "\n" ["@3"
-                                "D=A"
-                                "@LCL"
-                                "A=D+M"
-                                "D=A"
-                                "@R12"
-                                "M=D"
-                                "@SP"
-                                "A=M-1"
-                                "D=M"
-                                "@R12"
-                                "A=M"
-                                "M=D"
-                                "@SP"
-                                "M=M-1"])))))
-
-
+  (testing "pop local/arg/this/that commands"
+    (let [segment-var-map {"local" "LCL"
+                           "arg" "ARG"
+                           "this" "THIS"
+                           "that" "THAT"}]
+      (doseq [[segment base] segment-var-map]
+        (let [cmd {:source (str "pop " segment " 7")
+                   :command "pop"
+                   :segment segment
+                   :index 7}
+              code (translate cmd)]
+          (is (= code (s/join "\n" ["@7"
+                                    "D=A"
+                                    (str "@" base)
+                                    "A=D+M"
+                                    "D=A"
+                                    "@R12"
+                                    "M=D"
+                                    "@SP"
+                                    "A=M-1"
+                                    "D=M"
+                                    "@R12"
+                                    "A=M"
+                                    "M=D"
+                                    "@SP"
+                                    "M=M-1"])))))))
 
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]

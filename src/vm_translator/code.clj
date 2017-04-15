@@ -1,12 +1,6 @@
 (ns vm-translator.code
   (:require [clojure.string :as s]))
 
-(def base-segment-addresses
-  {"local" "LCL"
-   "arg" "ARG"
-   "this" "THIS"
-   "that" "THAT"})
-
 ;; helpers to generate common hack asm code snippets
 (defn- pop-to-d
   "Generates asm code to pop value from stack to D register"
