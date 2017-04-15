@@ -150,8 +150,7 @@
     (let [segment-var-map {"local" "LCL"
                            "arg" "ARG"
                            "this" "THIS"
-                           "that" "THAT"
-                           "temp" "5"}]
+                           "that" "THAT"}]
       (doseq [[segment base] segment-var-map]
         (let [cmd {:source (str "push " segment " 3")
                    :command "push"
@@ -173,8 +172,7 @@
     (let [segment-var-map {"local" "LCL"
                            "arg" "ARG"
                            "this" "THIS"
-                           "that" "THAT"
-                           "temp" "5"}]
+                           "that" "THAT"}]
       (doseq [[segment base] segment-var-map]
         (let [cmd {:source (str "pop " segment " 7")
                    :command "pop"
@@ -186,16 +184,44 @@
                                     (str "@" base)
                                     "A=D+M"
                                     "D=A"
-                                    "@R12"
+                                    "@R13"
                                     "M=D"
                                     "@SP"
                                     "A=M-1"
                                     "D=M"
-                                    "@R12"
+                                    "@R13"
                                     "A=M"
                                     "M=D"
                                     "@SP"
                                     "M=M-1"])))))))
+
+  (testing "push temp command"
+    (let [cmd {:source "push temp 4"
+               :command "push"
+               :segment "temp"
+               :index 4}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@9"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"])))))
+
+  (testing "pop temp command"
+    (let [cmd {:source "pop temp 3"
+               :command "pop"
+               :segment "temp"
+               :index 3}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "A=M-1"
+                                "D=M"
+                                "@8"
+                                "M=D"
+                                "@SP"
+                                "M=M-1"])))))
 
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]

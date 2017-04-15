@@ -1,6 +1,9 @@
 (ns vm-translator.code
   (:require [clojure.string :as s]))
 
+;; base address of temp segment
+(def TEMP-BASE 5)
+
 ;; helpers to generate common hack asm code snippets
 (defn- pop-to-d
   "Generates asm code to pop value from stack to D register"
@@ -33,6 +36,13 @@
   []
   (s/join "\n" ["@SP"
                 "M=M+1"]))
+
+(defn- push-d-inc-sp
+  "Generates asm code to push value to stack from D then
+  increment stack pointer."
+  []
+  (s/join "\n" [(push-from-d)
+                (inc-sp)]))
 
 (defn- dec-sp
   "Generates asm code to decrement stack pointer"
@@ -78,17 +88,17 @@
                 "A=D+M"
                 "D=A"]))
 
-(defn- store-d-in-r12-addr
-  "Generates asm code that stores D in M[R12]"
+(defn- store-d-in-r13-addr
+  "Generates asm code that stores D in M[r13]"
   []
-  (s/join "\n" ["@R12"
+  (s/join "\n" ["@R13"
                 "A=M"
                 "M=D"]))
 
-(defn- store-d-in-r12
-  "Generates asm code that stores D in R12."
+(defn- store-d-in-r13
+  "Generates asm code that stores D in r13."
   []
-  (s/join "\n" ["@R12"
+  (s/join "\n" ["@R13"
                 "M=D"]))
 
 ;; translators for the different commands
@@ -180,11 +190,25 @@
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
   [{:keys [index] :as cmd}]
-  (s/join "\n" [; store constant in D
-                (str "@" index)
+  (s/join "\n" [(at-address index)
                 "D=A"
                 (push-from-d)
                 (inc-sp)]))
+
+(defn translate-push-temp
+  "Translates the 'push temp' command to assembly"
+  [{:keys [index] :as cmd}]
+  (s/join "\n" [(at-address (+ TEMP-BASE index))
+                "D=M"
+                (push-d-inc-sp)]))
+
+(defn translate-pop-temp
+  "Translates the 'pop temp' command to assembly"
+  [{:keys [index] :as command}]
+  (s/join "\n" [(pop-to-d)
+                (at-address (+ TEMP-BASE index))
+                "M=D"
+                (dec-sp)]))
 
 (defn- translate-generic-push
   "Translates the 'push' command for local, arg, this, that segments"
@@ -197,9 +221,9 @@
   "Translates the 'pop' command for local, arg, this, that segments."
   [base index]
   (s/join "\n" [(store-segment-addr-in-d base index)
-                (store-d-in-r12)
+                (store-d-in-r13)
                 (pop-to-d)
-                (store-d-in-r12-addr)
+                (store-d-in-r13-addr)
                 (dec-sp)]))
 
 (defn translate-push
@@ -212,7 +236,7 @@
     "arg" (translate-generic-push "ARG" index)
     "this" (translate-generic-push "THIS" index)
     "that" (translate-generic-push "THAT" index)
-    "temp" (translate-generic-push "5" index)))
+    "temp" (translate-push-temp cmd)))
 
 (defn translate-pop
   "Translates 'pop' command to hack assembly."
@@ -222,7 +246,7 @@
     "arg" (translate-generic-pop "ARG" index)
     "this" (translate-generic-pop "THIS" index)
     "that" (translate-generic-pop "THAT" index)
-    "temp" (translate-generic-pop "5" index)))
+    "temp" (translate-pop-temp cmd)))
 
 (defn find-translator
   "Finds the appropriate function to translate the given command"
