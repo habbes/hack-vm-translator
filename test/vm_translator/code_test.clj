@@ -145,6 +145,48 @@
                                 "M=D"
                                 "@SP"
                                 "M=M+1"])))))
+
+  (testing "push local command"
+    (let [cmd {:source "push local 2"
+               :command "push"
+               :segment "local"
+               :index 2}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@2"
+                                "D=A"
+                                "@LCL"
+                                "A=D+M"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"])))))
+
+  (testing "pop local command"
+    (let [cmd {:source "pop local 3"
+               :command "pop"
+               :segment "local"
+               :index 3}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@3"
+                                "D=A"
+                                "@LCL"
+                                "A=D+M"
+                                "D=A"
+                                "@R12"
+                                "M=D"
+                                "@SP"
+                                "A=M-1"
+                                "D=M"
+                                "@R12"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M-1"])))))
+
+
+
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
