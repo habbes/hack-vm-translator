@@ -150,7 +150,8 @@
     (let [segment-var-map {"local" "LCL"
                            "arg" "ARG"
                            "this" "THIS"
-                           "that" "THAT"}]
+                           "that" "THAT"
+                           "temp" "5"}]
       (doseq [[segment base] segment-var-map]
         (let [cmd {:source (str "push " segment " 3")
                    :command "push"
@@ -172,7 +173,8 @@
     (let [segment-var-map {"local" "LCL"
                            "arg" "ARG"
                            "this" "THIS"
-                           "that" "THAT"}]
+                           "that" "THAT"
+                           "temp" "5"}]
       (doseq [[segment base] segment-var-map]
         (let [cmd {:source (str "pop " segment " 7")
                    :command "pop"

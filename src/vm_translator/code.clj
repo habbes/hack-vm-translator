@@ -211,7 +211,8 @@
     "local" (translate-generic-push "LCL" index)
     "arg" (translate-generic-push "ARG" index)
     "this" (translate-generic-push "THIS" index)
-    "that" (translate-generic-push "THAT" index)))
+    "that" (translate-generic-push "THAT" index)
+    "temp" (translate-generic-push "5" index)))
 
 (defn translate-pop
   "Translates 'pop' command to hack assembly."
@@ -220,7 +221,8 @@
     "local" (translate-generic-pop "LCL" index)
     "arg" (translate-generic-pop "ARG" index)
     "this" (translate-generic-pop "THIS" index)
-    "that" (translate-generic-pop "THAT" index)))
+    "that" (translate-generic-pop "THAT" index)
+    "temp" (translate-generic-pop "5" index)))
 
 (defn find-translator
   "Finds the appropriate function to translate the given command"
