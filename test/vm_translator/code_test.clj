@@ -274,6 +274,35 @@
                                 "@THAT"
                                 "M=D"])))))
 
+  (testing "push static command"
+    (let [cmd {:source "push static 3"
+               :command "push"
+               :segment "static"
+               :index 3
+               :context {:class "Foo"}}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@Foo.3"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"])))))
+
+  (testing "pop static command"
+    (let [cmd {:source "pop static 5"
+               :command "pop"
+               :segment "static"
+               :index 5
+               :context {:class "Bar"}}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "M=M-1"
+                                "A=M"
+                                "D=M"
+                                "@Bar.5"
+                                "M=D"])))))
+
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
