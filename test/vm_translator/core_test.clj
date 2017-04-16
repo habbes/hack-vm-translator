@@ -108,6 +108,25 @@ M=M-1
           out (get-output-path input)]
       (is (= out "./path/to/file.asm")))))
 
+(deftest get-class-name-test
+  (testing "Get filename without extension"
+    (let [input "Sample.vm" out (get-class-name input)]
+      (is (= out "Sample"))))
+  (testing "Should support absolute paths"
+    (let [input "/this/is/a/Program.vm"
+          out (get-class-name input)]
+      (is (= out "Program"))))
+  (testing "Should support relative paths"
+    (let [input "path/to/File.vm"
+          out (get-class-name input)]
+      (is (= out "File")))
+    (let [input "../path/to/file.vm"
+          out (get-class-name input)]
+      (is (= out "file")))
+    (let [input "./path/to/file.vm"
+          out (get-class-name input)]
+      (is (= out "file")))))
+
 (deftest translate-line-test
   (testing "translates source vm line to hack assembly with comment"
     (let [line "push constant 3"
@@ -182,11 +201,11 @@ M=M-1
   (testing "Translates vm source from reader and writer asm output to writer"
     (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source))
           wrtr (java.io.StringWriter.)]
-      (translate-source rdr wrtr)
+      (translate-source rdr wrtr "SampleClass")
       (is (= (.toString wrtr) sample-output))))
 
   (testing "Translates vm source code containing comparison commands"
     (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source-eq))
           wrtr (java.io.StringWriter.)]
-      (translate-source rdr wrtr)
+      (translate-source rdr wrtr "SampleClass")
       (is (= (.toString wrtr) sample-output-eq)))))

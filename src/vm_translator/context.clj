@@ -1,9 +1,10 @@
 (ns vm-translator.context)
 
 (defn initialize
-  []
+  [class-name]
   {:line-number 0
-   :instruction-number -1})
+   :instruction-number -1
+   :class class-name})
 
 (defn inc-line
   [ctx]

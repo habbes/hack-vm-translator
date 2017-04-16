@@ -41,10 +41,10 @@
 (defn translate-source
   "Reads vm source code from rdr and writes the output
   assembly code into wrtr"
-  [rdr wrtr]
+  [rdr wrtr class-name]
   (let [lines (line-seq rdr)
         handler (create-writer-output-handler wrtr)
-        ctx (context/initialize)]
+        ctx (context/initialize class-name)]
     (translate-lines lines handler ctx)))
 
 (defn get-output-path
@@ -55,18 +55,26 @@
              #"([a-zA-Z0-9_\- ]+)\.vm$"
              "$1.asm"))
 
+(defn get-class-name
+  "Gets the class name based on the input vm file"
+  [input-path]
+  (nth
+    (re-find #"([a-zA-Z0-9_\-]+)\.vm$" input-path)
+    1))
+
 (defn translate-file
   "Translate the input vm file and store the asm output in
   the specified output file"
-  [input-path output-path]
+  [input-path output-path class-name]
   (with-open [rdr (io/reader input-path)]
     (with-open [wrtr (io/writer output-path)]
       (prn "Translating to" output-path)
-      (translate-source rdr wrtr)
+      (translate-source rdr wrtr class-name)
       (prn "Operation complete"))))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [input-path]
-  (let [output-path (get-output-path input-path)]
-    (translate-file input-path output-path)))
+  (let [output-path (get-output-path input-path)
+        class-name (get-class-name input-path)]
+    (translate-file input-path output-path class-name)))
