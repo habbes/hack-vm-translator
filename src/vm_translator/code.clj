@@ -248,9 +248,22 @@
 
 
 (defn translate-pop-pointer
+  "Translates 'pop pointer' command to assembly"
   [{:keys [index]}]
   (let [base (get pointer-segment-index-map index)]
     (translate-pop-pointer-base base)))
+
+(defn translate-push-static
+  [{index :index {class :class} :context}]
+  (s/join "\n" [(at-address (str class "." index))
+                "D=M"
+                (push-d-inc-sp)]))
+
+(defn translate-pop-static
+  [{index :index {class :class} :context}]
+  (s/join "\n" [(pop-d-dec-sp)
+                (at-address (str class "." index))
+                "M=D"]))
 
 (defn- translate-generic-push
   "Translates the 'push' command for local, arg, this, that segments"
@@ -279,7 +292,8 @@
     "this" (translate-generic-push "THIS" index)
     "that" (translate-generic-push "THAT" index)
     "temp" (translate-push-temp cmd)
-    "pointer" (translate-push-pointer cmd)))
+    "pointer" (translate-push-pointer cmd)
+    "static" (translate-push-static cmd)))
 
 (defn translate-pop
   "Translates 'pop' command to hack assembly."
@@ -290,7 +304,8 @@
     "this" (translate-generic-pop "THIS" index)
     "that" (translate-generic-pop "THAT" index)
     "temp" (translate-pop-temp cmd)
-    "pointer" (translate-pop-pointer cmd)))
+    "pointer" (translate-pop-pointer cmd)
+    "static" (translate-pop-static cmd)))
 
 (defn find-translator
   "Finds the appropriate function to translate the given command"
