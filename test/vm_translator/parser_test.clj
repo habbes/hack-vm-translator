@@ -106,6 +106,51 @@
         (is (= {:source source
                 :command source}
                cmd)))))
+  (testing "branching commands"
+    (let [branches [["goto" "BASECASE"] ["if-goto" "END"] ["goto" "LOOP"]]]
+      (doseq [[command label] branches]
+        (let [source (str command label)
+              cmd (parse-command source)]
+          (is (= {:source source
+                  :command command
+                  :label label}
+                 cmd))))))
+  (testing "function command"
+    (let [source "function Math.multiply 2"
+          cmd (parse-command source)]
+      (is (= {:source source
+              :command "function"
+              :function "Math.multiply"
+              :vars 2}
+             cmd)))
+    (let [source "function factorial 1"
+          cmd (parse-command source)]
+      (is (= {:source source
+              :command "function"
+              :function "factorial"
+              :vars 1}
+             cmd))))
+
+  (testing "call command"
+    (let [source "call Math.multiply 2"
+          cmd (parse-command source)]
+      (is (= cmd {:source source
+                  :command "call"
+                  :function "Math.multiply"
+                  :args 2})))
+    (let [source "call discriminant 3"
+          cmd (parse-command source)]
+      (is (= cmd {:source source
+                  :command "call"
+                  :function "discriminant"
+                  :args 3}))))
+
+  (testing "return command"
+    (let [source "return"
+          cmd (parse-command source)]
+      (is (= cmd {:source source
+                  :command "return"}))))
+
   (testing "ignores comments and extra whitespace"
     (let [source "push local 10 //test" cmd (parse-command source)]
       (is (= {:source "push local 10"
