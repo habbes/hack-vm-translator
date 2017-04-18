@@ -303,6 +303,63 @@
                                 "@Bar.5"
                                 "M=D"])))))
 
+  (testing "label command"
+    (let [cmd {:source "label END"
+               :command "label"
+               :label "END"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["(END)"]))))
+    (testing "prefixes current function name within function context"
+      (let [cmd {:source "label LOOP"
+                 :command "label"
+                 :label "LOOP"
+                 :context {:class "MyClass"
+                           :function "MyClass.func"} }
+            code (translate cmd)]
+        (is (= code "(MyClass.func$LOOP)")))))
+
+  (testing "goto command"
+    (let [cmd {:source "goto LOOP"
+               :command "goto"
+               :label "LOOP"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@LOOP"
+                                "0;JMP"]))))
+    (testing "prefixes function name within function context"
+      (let [cmd {:source "goto BASE"
+                 :command "goto"
+                 :label "BASE"
+                 :context {:class "Foo"
+                           :function "Foo.funct"}}
+            code (translate cmd)]
+        (is (= code (s/join "\n" ["@Foo.funct$BASE"
+                                  "0;JMP"]))))))
+
+  (testing "if-goto command"
+    (let [cmd {:source "if-goto LOOP_END"
+               :command "if-goto"
+               :label "LOOP_END"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["@SP"
+                                "M=M-1"
+                                "A=M"
+                                "D=M"
+                                "@LOOP_END"
+                                "D;JNE"]))))
+    (testing "prefixes function name within function context"
+      (let [cmd {:source "if-goto END"
+                 :command "if-goto"
+                 :label "END"
+                 :context {:class "Foo"
+                           :function "Foo.funct"}}
+            code (translate cmd)]
+        (is (= code (s/join "\n" ["@SP"
+                                  "M=M-1"
+                                  "A=M"
+                                  "D=M"
+                                  "@Foo.funct$_END"
+                                  "D;JNE"]))))))
+
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
