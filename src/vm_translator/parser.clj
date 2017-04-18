@@ -6,6 +6,14 @@
 (def arithmetic-re #"(add|sub|neg|eq|gt|lt|and|or|not)")
 ; regex used to parse push and pop commands
 (def push-pop-re #"(push|pop) (argument|local|this|that|constant|static|temp|pointer) (\d+)")
+; regex used to parse branching commands
+(def branching-re #"(goto|if\-goto|label) ([\w\.\-]+)")
+; regex used to parse the function command
+(def function-re #"(function) ([\w\.]+) (\d+)")
+; regex used to parse the call command
+(def call-re #"(call) ([\w\.]+) (\d+)")
+; regex used to parse the return command
+(def return-re #"(return)")
 
 (defn clean-line
   "Cleans source line, removing comments and extra whitespace"
@@ -24,12 +32,42 @@
 (defn parse-push-pop-command
   "Parses push or pop command"
   [cmd-ctx [segment index]]
-  (assoc cmd-ctx :segment segment :index (Integer/parseInt index)))
+  (assoc cmd-ctx
+    :segment segment
+    :index (Integer/parseInt index)))
+
+(defn parse-branching-command
+  "Parses goto, if-goto or label command"
+  [cmd-ctx [label]]
+  (assoc cmd-ctx :label label))
+
+(defn parse-function-command
+  "Parses function command"
+  [cmd-ctx [function vars]]
+  (assoc cmd-ctx
+    :function function
+    :vars (Integer/parseInt vars)))
+
+(defn parse-call-command
+  "Parses call command"
+  [cmd-ctx [function args]]
+  (assoc cmd-ctx
+    :function function
+    :args (Integer/parseInt args)))
+
+(defn parse-return-command
+  "Parses return command"
+  [cmd-ctx parts]
+  cmd-ctx)
 
 ;Pairs of regexes and their corresponding parser fns
-(def re-parser-pairs
+(def matchers
   [[arithmetic-re parse-arithmetic-command]
-   [push-pop-re parse-push-pop-command]])
+   [push-pop-re parse-push-pop-command]
+   [branching-re parse-branching-command]
+   [function-re parse-function-command]
+   [call-re parse-call-command]
+   [return-re parse-return-command]])
 
 (defn parse-if-match
   "Parses the source with the given function f if source matches
@@ -53,7 +91,7 @@
   "Parses a line of vm source code into a command context object based
   on the provided regex and parser fns"
   ([source]
-   (parse-command source re-parser-pairs))
+   (parse-command source matchers))
   ([source re-f-pairs]
   (-> source
       clean-line

@@ -109,7 +109,7 @@
   (testing "branching commands"
     (let [branches [["goto" "BASECASE"] ["if-goto" "END"] ["goto" "LOOP"]]]
       (doseq [[command label] branches]
-        (let [source (str command label)
+        (let [source (str command " " label)
               cmd (parse-command source)]
           (is (= {:source source
                   :command command
