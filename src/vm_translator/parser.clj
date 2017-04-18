@@ -7,7 +7,7 @@
 ; regex used to parse push and pop commands
 (def push-pop-re #"(push|pop) (argument|local|this|that|constant|static|temp|pointer) (\d+)")
 ; regex used to parse branching commands
-(def branching-re #"(goto|if\-goto|label) ([\w\.\-]+)")
+(def branching-re #"(goto|if\-goto|label) ([\w\.\-\$]+)")
 ; regex used to parse the function command
 (def function-re #"(function) ([\w\.]+) (\d+)")
 ; regex used to parse the call command
