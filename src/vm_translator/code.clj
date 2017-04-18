@@ -79,7 +79,7 @@
   (s/join "\n" ["@SP"
                 "A=M-1"]))
 
-(defn- at-address
+(defn- at
   "Generates asm code to set A register to specified address."
   [address]
   (str "@" address))
@@ -87,18 +87,18 @@
 (defn- store-segment-val-in-d
   "Generates asm code that stores M[base + index] in D."
   [base index]
-  (s/join "\n" [(at-address index)
+  (s/join "\n" [(at index)
                 "D=A"
-                (at-address base)
+                (at base)
                 "A=D+M"
                 "D=M"]))
 
 (defn- store-segment-addr-in-d
   "Generates asm code that stores address base + index in D."
   [base index]
-  (s/join "\n" [(at-address index)
+  (s/join "\n" [(at index)
                 "D=A"
-                (at-address base)
+                (at base)
                 "A=D+M"
                 "D=A"]))
 
@@ -114,6 +114,13 @@
   []
   (s/join "\n" ["@R13"
                 "M=D"]))
+
+(defn- prefix-label
+  "Prefix label if generated within a function context"
+  [label {:keys [function]}]
+  (if function
+    (str function "$" label)
+    label))
 
 ;; translators for the different commands
 
@@ -168,12 +175,12 @@
   [{{ic :instruction-number} :context} jump]
   (s/join "\n" [(pop-to-d-dec-a)
                 "D=M-D"
-                (at-address (+ ic 10))
+                (at (+ ic 10))
                 (str "D;" jump)
-                (at-address (+ ic 13))
+                (at (+ ic 13))
                 "0;JMP"
                 "D=-1"
-                (at-address (+ ic 14))
+                (at (+ ic 14))
                 "0;JMP"
                 "D=0"
                 (point-a-to-stack-top)
@@ -204,7 +211,7 @@
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
   [{:keys [index] :as cmd}]
-  (s/join "\n" [(at-address index)
+  (s/join "\n" [(at index)
                 "D=A"
                 (push-from-d)
                 (inc-sp)]))
@@ -212,7 +219,7 @@
 (defn translate-push-temp
   "Translates the 'push temp' command to assembly"
   [{:keys [index] :as cmd}]
-  (s/join "\n" [(at-address (+ TEMP-BASE index))
+  (s/join "\n" [(at (+ TEMP-BASE index))
                 "D=M"
                 (push-d-inc-sp)]))
 
@@ -220,7 +227,7 @@
   "Translates the 'pop temp' command to assembly"
   [{:keys [index] :as command}]
   (s/join "\n" [(pop-to-d)
-                (at-address (+ TEMP-BASE index))
+                (at (+ TEMP-BASE index))
                 "M=D"
                 (dec-sp)]))
 
@@ -228,7 +235,7 @@
   "Translate 'push pointer' based on the specified base pointer.
   base should be THIS or THAT"
   [base]
-  (s/join "\n" [(at-address base)
+  (s/join "\n" [(at base)
                 "D=M"
                 (push-d-inc-sp)]))
 
@@ -237,7 +244,7 @@
   base should be THIS or THAT"
   [base]
   (s/join "\n" [(pop-d-dec-sp)
-                (at-address base)
+                (at base)
                 "M=D"]))
 
 (defn translate-push-pointer
@@ -255,14 +262,14 @@
 
 (defn translate-push-static
   [{index :index {class :class} :context}]
-  (s/join "\n" [(at-address (str class "." index))
+  (s/join "\n" [(at (str class "." index))
                 "D=M"
                 (push-d-inc-sp)]))
 
 (defn translate-pop-static
   [{index :index {class :class} :context}]
   (s/join "\n" [(pop-d-dec-sp)
-                (at-address (str class "." index))
+                (at (str class "." index))
                 "M=D"]))
 
 (defn- translate-generic-push
@@ -307,6 +314,27 @@
     "pointer" (translate-pop-pointer cmd)
     "static" (translate-pop-static cmd)))
 
+(defn translate-label
+  "Translates 'label' command to hack assembly."
+  [{:keys [label context] :as cmd}]
+  (let [label (prefix-label label context)]
+    (str "(" label ")")))
+
+(defn translate-goto
+  "Translates 'goto' vm command to assembly."
+  [{:keys [label context] :as cmd}]
+  (let [label (prefix-label label context)]
+    (s/join "\n" [(at label)
+                  "0;JMP"])))
+
+(defn translate-if-goto
+  "Translates 'if-goto' vm command to assembly."
+  [{:keys [label context] :as cmd}]
+  (let [label (prefix-label label context)]
+    (s/join "\n" [(pop-d-dec-sp)
+                  (at label)
+                  "D;JNE"])))
+
 (defn find-translator
   "Finds the appropriate function to translate the given command"
   [{:keys [command] :as cmd}]
@@ -322,6 +350,9 @@
     "not" translate-not
     "push" translate-push
     "pop" translate-pop
+    "label" translate-label
+    "goto" translate-goto
+    "if-goto" translate-if-goto
     nil))
 
 (defn translate

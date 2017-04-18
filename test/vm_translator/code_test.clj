@@ -357,7 +357,7 @@
                                   "M=M-1"
                                   "A=M"
                                   "D=M"
-                                  "@Foo.funct$_END"
+                                  "@Foo.funct$END"
                                   "D;JNE"]))))))
 
   (testing "returns nil on invalid command"
