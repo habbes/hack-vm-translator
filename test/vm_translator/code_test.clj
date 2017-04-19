@@ -389,7 +389,8 @@
                                 "M=D"
                                 ; store return address in R15
                                 "@5"
-                                "D=D-A"
+                                "A=D-A"
+                                "D=M"
                                 "@R15"
                                 "M=D"
                                 ; pop from stack and store in ARG
@@ -406,30 +407,35 @@
                                 "M=D"
                                 ; restore THAT
                                 "@R14"
-                                "AM=M-1"
+                                "M=M-1"
+                                "A=M"
                                 "D=M"
                                 "@THAT"
                                 "M=D"
                                 ; restore THIS
                                 "@R14"
-                                "AM=M-1"
+                                "M=M-1"
+                                "A=M"
                                 "D=M"
                                 "@THIS"
                                 "M=D"
                                 ; restore ARG
                                 "@R14"
-                                "AM=M-1"
+                                "M=M-1"
+                                "A=M"
                                 "D=M"
                                 "@ARG"
                                 "M=D"
                                 ; restore LCL
                                 "@R14"
-                                "AM=M-1"
+                                "M=M-1"
+                                "A=M"
                                 "D=M"
                                 "@LCL"
                                 "M=D"
                                 ; goto return address
                                 "@R15"
+                                "A=M"
                                 "0;JMP"])))))
 
   (testing "returns nil on invalid command"

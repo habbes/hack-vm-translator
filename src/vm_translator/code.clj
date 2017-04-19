@@ -154,7 +154,8 @@
                 "@R14"
                 "M=D"
                 "@5"
-                "D=D-A"
+                "A=D-A"
+                "D=M"
                 "@R15"
                 "M=D"]))
 
@@ -181,7 +182,8 @@
   []
   (let [segments ["THAT" "THIS" "ARG" "LCL"]]
     (join-lines (map #(join-lines ["@R14"
-                                     "AM=M-1"
+                                     "M=M-1"
+                                     "A=M"
                                      "D=M"
                                      (at %)
                                      "M=D"])
@@ -191,7 +193,8 @@
   "Jums to caller's return address"
   []
   (join-lines ["@R15"
-                "0;JMP"]))
+               "A=M"
+               "0;JMP"]))
 
 ;; translators for the different commands
 
