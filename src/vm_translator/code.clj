@@ -182,8 +182,7 @@
   []
   (let [segments ["THAT" "THIS" "ARG" "LCL"]]
     (join-lines (map #(join-lines ["@R14"
-                                     "M=M-1"
-                                     "A=M"
+                                     "AM=M-1"
                                      "D=M"
                                      (at %)
                                      "M=D"])
