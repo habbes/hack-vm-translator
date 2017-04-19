@@ -79,10 +79,29 @@
   (s/join "\n" ["@SP"
                 "A=M-1"]))
 
+(defn push-zeros
+  "Generats asm code to push 0 the specifed number of times
+  to the stack and updated the stack pointer"
+  [n]
+  (s/join "\n" ["@SP"
+                "A=M"
+                "M=0"
+                (s/join "\n"
+                        (repeat (- n 1)
+                                "A=A+1\nM=0"))
+                "D=A+1"
+                "@SP"
+                "M=D"]))
+
 (defn- at
   "Generates asm code to set A register to specified address."
   [address]
   (str "@" address))
+
+(defn- label
+  "Generates asm code to create a label with the specified name."
+  [l]
+  (str "(" l ")"))
 
 (defn- store-segment-val-in-d
   "Generates asm code that stores M[base + index] in D."
@@ -335,6 +354,12 @@
                   (at label)
                   "D;JNE"])))
 
+(defn translate-function
+  "Translates 'function' command to assembly."
+  [{:keys [function vars] :as cmd}]
+  (s/join "\n" [(label function)
+                (push-zeros vars)]))
+
 (defn find-translator
   "Finds the appropriate function to translate the given command"
   [{:keys [command] :as cmd}]
@@ -353,6 +378,7 @@
     "label" translate-label
     "goto" translate-goto
     "if-goto" translate-if-goto
+    "function" translate-function
     nil))
 
 (defn translate

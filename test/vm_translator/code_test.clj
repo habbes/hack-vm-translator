@@ -360,6 +360,78 @@
                                   "@Foo.funct$END"
                                   "D;JNE"]))))))
 
+  (testing "function command"
+    (let [cmd {:source "function MyClass.func 3"
+               :command "function"
+               :function "MyClass.func"
+               :vars 3}
+          code (translate cmd)]
+      (is (= code (s/join "\n" ["(MyClass.func)"
+                                "@SP"
+                                "A=M"
+                                "M=0"
+                                "A=A+1"
+                                "M=0"
+                                "A=A+1"
+                                "M=0"
+                                "D=A+1"
+                                "@SP"
+                                "M=D"])))))
+
+  (testing "return command"
+    (let [cmd {:source "return"
+               :command "return"}
+          code (translate cmd)]
+      (is (= code (s/join "\n" [; store the top address of the current frame
+                                "@LCL"
+                                "D=M"
+                                "@R14"
+                                "M=D"
+                                ; store return address in R15
+                                "@5"
+                                "D=D-A"
+                                "@R15"
+                                "M=D"
+                                ; pop from stack and store in ARG
+                                "@SP"
+                                "A=M-1"
+                                "D=M"
+                                "@ARG"
+                                "A=M"
+                                "M=D"
+                                ; restore caller's SP
+                                "@ARG"
+                                "D=M+1"
+                                "@SP"
+                                "M=D"
+                                ; restore THAT
+                                "@R14"
+                                "AM=M-1"
+                                "D=M"
+                                "@THAT"
+                                "M=D"
+                                ; restore THIS
+                                "@R14"
+                                "AM=M-1"
+                                "D=M"
+                                "@THIS"
+                                "M=D"
+                                ; restore ARG
+                                "@R14"
+                                "AM=M-1"
+                                "D=M"
+                                "@ARG"
+                                "M=D"
+                                ; restore LCL
+                                "@R14"
+                                "AM=M-1"
+                                "D=M"
+                                "@LCL"
+                                "M=D"
+                                ; goto return address
+                                "@R15"
+                                "0;JMP"])))))
+
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
