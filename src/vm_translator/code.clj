@@ -141,6 +141,55 @@
     (str function "$" label)
     label))
 
+(defn- copy-frame-and-return-addr
+  "Fetch the address just above the caller's frame
+  and its return address and store them in R14 and R15
+  respectively."
+  []
+  (s/join "\n" ["@LCL"
+                "D=M"
+                "@R14"
+                "M=D"
+                "@5"
+                "D=D-A"
+                "@R15"
+                "M=D"]))
+
+(defn- reposition-return-value
+  "Repositions the return value of the function
+  to the current base address of ARG."
+  []
+  (s/join "\n" [(pop-to-d)
+                "@ARG"
+                "A=M"
+                "M=D"]))
+
+(defn- restore-caller-sp
+  "Restores the SP of the caller"
+  []
+  (s/join "\n" ["@ARG"
+                "D=M+1"
+                "@SP"
+                "M=D"]))
+
+(defn- restore-caller-segments
+  "Restores LCL, ARG, THIS and THAT segments of
+  the caller"
+  []
+  (let [segments ["THAT" "THIS" "ARG" "LCL"]]
+    (s/join "\n" (map #(s/join "\n" ["@R14"
+                                     "AM=M-1"
+                                     "D=M"
+                                     (at %)
+                                     "M=D"])
+                      segments))))
+
+(defn- return-to-caller
+  "Jums to caller's return address"
+  []
+  (s/join "\n" ["@R15"
+                "0;JMP"]))
+
 ;; translators for the different commands
 
 (defn translate-add
@@ -360,6 +409,15 @@
   (s/join "\n" [(label function)
                 (push-zeros vars)]))
 
+(defn translate-return
+  "Translates 'return' command to assembly."
+  [cmd]
+  (s/join "\n" [(copy-frame-and-return-addr)
+                (reposition-return-value)
+                (restore-caller-sp)
+                (restore-caller-segments)
+                (return-to-caller)]))
+
 (defn find-translator
   "Finds the appropriate function to translate the given command"
   [{:keys [command] :as cmd}]
@@ -379,6 +437,7 @@
     "goto" translate-goto
     "if-goto" translate-if-goto
     "function" translate-function
+    "return" translate-return
     nil))
 
 (defn translate
