@@ -9,11 +9,14 @@
   {0 "THIS"
    1 "THAT"})
 
+;; helper to join strings with newline
+(def join-lines (partial s/join "\n"))
+
 ;; helpers to generate common hack asm code snippets
 (defn- pop-to-d
   "Generates asm code to pop value from stack to D register"
   []
-  (s/join "\n" ["@SP"
+  (join-lines ["@SP"
                 "A=M-1"
                 "D=M"]))
 
@@ -26,34 +29,34 @@
   "Generates asm code that pops value from stack to D register
   then decrements A register"
   []
-  (s/join "\n" [(pop-to-d)
+  (join-lines [(pop-to-d)
                 (dec-a)]))
 
 (defn- push-from-d
   "Generates asm code to push value to stack from D register"
   []
-  (s/join "\n" ["@SP"
+  (join-lines ["@SP"
                 "A=M"
                 "M=D"]))
 
 (defn- inc-sp
   "Generates asm code to increment stack pointer"
   []
-  (s/join "\n" ["@SP"
+  (join-lines ["@SP"
                 "M=M+1"]))
 
 (defn- push-d-inc-sp
   "Generates asm code to push value to stack from D then
   increment stack pointer."
   []
-  (s/join "\n" [(push-from-d)
+  (join-lines [(push-from-d)
                 (inc-sp)]))
 
 (defn- pop-d-dec-sp
   "Generates asm code to pop value from stack into D and
   decrement stack pointer."
   []
-  (s/join "\n" ["@SP"
+  (join-lines ["@SP"
                 "M=M-1"
                 "A=M"
                 "D=M"]))
@@ -61,14 +64,14 @@
 (defn- dec-sp
   "Generates asm code to decrement stack pointer"
   []
-  (s/join "\n" ["@SP"
+  (join-lines ["@SP"
                 "M=M-1"]))
 
 (defn- inc-a-update-sp
   "Generates asm code to update the stack pointer by first
   incrementing the A register"
   []
-  (s/join "\n" ["D=A+1"
+  (join-lines ["D=A+1"
                 "@SP"
                 "M=D"]))
 
@@ -76,17 +79,17 @@
   "Generates asm code to set the A register to point to
   the value at the top of the stack."
   []
-  (s/join "\n" ["@SP"
+  (join-lines ["@SP"
                 "A=M-1"]))
 
 (defn push-zeros
   "Generats asm code to push 0 the specifed number of times
   to the stack and updated the stack pointer"
   [n]
-  (s/join "\n" ["@SP"
+  (join-lines ["@SP"
                 "A=M"
                 "M=0"
-                (s/join "\n"
+                (join-lines
                         (repeat (- n 1)
                                 "A=A+1\nM=0"))
                 "D=A+1"
@@ -106,7 +109,7 @@
 (defn- store-segment-val-in-d
   "Generates asm code that stores M[base + index] in D."
   [base index]
-  (s/join "\n" [(at index)
+  (join-lines [(at index)
                 "D=A"
                 (at base)
                 "A=D+M"
@@ -115,7 +118,7 @@
 (defn- store-segment-addr-in-d
   "Generates asm code that stores address base + index in D."
   [base index]
-  (s/join "\n" [(at index)
+  (join-lines [(at index)
                 "D=A"
                 (at base)
                 "A=D+M"
@@ -124,14 +127,14 @@
 (defn- store-d-in-r13-addr
   "Generates asm code that stores D in M[r13]"
   []
-  (s/join "\n" ["@R13"
+  (join-lines ["@R13"
                 "A=M"
                 "M=D"]))
 
 (defn- store-d-in-r13
   "Generates asm code that stores D in r13."
   []
-  (s/join "\n" ["@R13"
+  (join-lines ["@R13"
                 "M=D"]))
 
 (defn- prefix-label
@@ -146,7 +149,7 @@
   and its return address and store them in R14 and R15
   respectively."
   []
-  (s/join "\n" ["@LCL"
+  (join-lines ["@LCL"
                 "D=M"
                 "@R14"
                 "M=D"
@@ -159,7 +162,7 @@
   "Repositions the return value of the function
   to the current base address of ARG."
   []
-  (s/join "\n" [(pop-to-d)
+  (join-lines [(pop-to-d)
                 "@ARG"
                 "A=M"
                 "M=D"]))
@@ -167,7 +170,7 @@
 (defn- restore-caller-sp
   "Restores the SP of the caller"
   []
-  (s/join "\n" ["@ARG"
+  (join-lines ["@ARG"
                 "D=M+1"
                 "@SP"
                 "M=D"]))
@@ -177,7 +180,7 @@
   the caller"
   []
   (let [segments ["THAT" "THIS" "ARG" "LCL"]]
-    (s/join "\n" (map #(s/join "\n" ["@R14"
+    (join-lines (map #(join-lines ["@R14"
                                      "AM=M-1"
                                      "D=M"
                                      (at %)
@@ -187,7 +190,7 @@
 (defn- return-to-caller
   "Jums to caller's return address"
   []
-  (s/join "\n" ["@R15"
+  (join-lines ["@R15"
                 "0;JMP"]))
 
 ;; translators for the different commands
@@ -195,28 +198,28 @@
 (defn translate-add
   "Translates the'add' vm command to hack assembly"
   [cmd]
-  (s/join "\n" [(pop-to-d-dec-a)
+  (join-lines [(pop-to-d-dec-a)
                 "M=D+M"
                 (dec-sp)]))
 
 (defn translate-sub
   "Translates the 'sub' vm command to hack assembly"
   [cmd]
-  (s/join "\n" [(pop-to-d-dec-a)
+  (join-lines [(pop-to-d-dec-a)
                 "M=M-D"
                 (dec-sp)]))
 
 (defn translate-neg
   "Translates the 'neg' vm command to hack assembly"
   [cmd]
-  (s/join "\n" [(point-a-to-stack-top)
+  (join-lines [(point-a-to-stack-top)
                 "M=-M"]))
 
 (defn translate-and
   "Transaltes the 'and' vm command to hack assembly.
   0x0000 is false and 0xffff is true."
   [cmd]
-  (s/join "\n" [(pop-to-d-dec-a)
+  (join-lines [(pop-to-d-dec-a)
                 "M=D&M"
                 (dec-sp)]))
 
@@ -224,7 +227,7 @@
   "Translates the 'or' vm command to hack assembly.
   0x0000 is false and 0xffff is true."
   [cmd]
-  (s/join "\n" [(pop-to-d-dec-a)
+  (join-lines [(pop-to-d-dec-a)
                 "M=D|M"
                 (dec-sp)]))
 
@@ -232,7 +235,7 @@
   "Translates the 'not' vm command to hack assembly.
   0x0000 is false and 0xffff is true."
   [cmd]
-  (s/join "\n" [(point-a-to-stack-top)
+  (join-lines [(point-a-to-stack-top)
                 "M=!M"]))
 
 (defn- translate-comp
@@ -241,7 +244,7 @@
   comparison commands.
   0x0000 is false and 0xffff is true."
   [{{ic :instruction-number} :context} jump]
-  (s/join "\n" [(pop-to-d-dec-a)
+  (join-lines [(pop-to-d-dec-a)
                 "D=M-D"
                 (at (+ ic 10))
                 (str "D;" jump)
@@ -279,7 +282,7 @@
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
   [{:keys [index] :as cmd}]
-  (s/join "\n" [(at index)
+  (join-lines [(at index)
                 "D=A"
                 (push-from-d)
                 (inc-sp)]))
@@ -287,14 +290,14 @@
 (defn translate-push-temp
   "Translates the 'push temp' command to assembly"
   [{:keys [index] :as cmd}]
-  (s/join "\n" [(at (+ TEMP-BASE index))
+  (join-lines [(at (+ TEMP-BASE index))
                 "D=M"
                 (push-d-inc-sp)]))
 
 (defn translate-pop-temp
   "Translates the 'pop temp' command to assembly"
   [{:keys [index] :as command}]
-  (s/join "\n" [(pop-to-d)
+  (join-lines [(pop-to-d)
                 (at (+ TEMP-BASE index))
                 "M=D"
                 (dec-sp)]))
@@ -303,7 +306,7 @@
   "Translate 'push pointer' based on the specified base pointer.
   base should be THIS or THAT"
   [base]
-  (s/join "\n" [(at base)
+  (join-lines [(at base)
                 "D=M"
                 (push-d-inc-sp)]))
 
@@ -311,7 +314,7 @@
   "Translate 'pop pointer' based on the specified base pointer.
   base should be THIS or THAT"
   [base]
-  (s/join "\n" [(pop-d-dec-sp)
+  (join-lines [(pop-d-dec-sp)
                 (at base)
                 "M=D"]))
 
@@ -330,27 +333,27 @@
 
 (defn translate-push-static
   [{index :index {class :class} :context}]
-  (s/join "\n" [(at (str class "." index))
+  (join-lines [(at (str class "." index))
                 "D=M"
                 (push-d-inc-sp)]))
 
 (defn translate-pop-static
   [{index :index {class :class} :context}]
-  (s/join "\n" [(pop-d-dec-sp)
+  (join-lines [(pop-d-dec-sp)
                 (at (str class "." index))
                 "M=D"]))
 
 (defn- translate-generic-push
   "Translates the 'push' command for local, arg, this, that segments"
   [base index]
-  (s/join "\n" [(store-segment-val-in-d base index)
+  (join-lines [(store-segment-val-in-d base index)
                 (push-from-d)
                 (inc-sp)]))
 
 (defn- translate-generic-pop
   "Translates the 'pop' command for local, arg, this, that segments."
   [base index]
-  (s/join "\n" [(store-segment-addr-in-d base index)
+  (join-lines [(store-segment-addr-in-d base index)
                 (store-d-in-r13)
                 (pop-to-d)
                 (store-d-in-r13-addr)
@@ -392,27 +395,27 @@
   "Translates 'goto' vm command to assembly."
   [{:keys [label context] :as cmd}]
   (let [label (prefix-label label context)]
-    (s/join "\n" [(at label)
+    (join-lines [(at label)
                   "0;JMP"])))
 
 (defn translate-if-goto
   "Translates 'if-goto' vm command to assembly."
   [{:keys [label context] :as cmd}]
   (let [label (prefix-label label context)]
-    (s/join "\n" [(pop-d-dec-sp)
+    (join-lines [(pop-d-dec-sp)
                   (at label)
                   "D;JNE"])))
 
 (defn translate-function
   "Translates 'function' command to assembly."
   [{:keys [function vars] :as cmd}]
-  (s/join "\n" [(label function)
+  (join-lines [(label function)
                 (push-zeros vars)]))
 
 (defn translate-return
   "Translates 'return' command to assembly."
   [cmd]
-  (s/join "\n" [(copy-frame-and-return-addr)
+  (join-lines [(copy-frame-and-return-addr)
                 (reposition-return-value)
                 (restore-caller-sp)
                 (restore-caller-segments)
