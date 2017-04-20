@@ -519,4 +519,9 @@
                                 "A=M"
                                 "M=D"
                                 "@SP"
-                                "M=M+1"]))))))
+                                "M=M+1"])))))
+  (testing "Does not add comment if command is empty"
+    (let [cmd {:source nil
+               :command nil}
+          code (translate-with-comment cmd)]
+      (is (= code nil)))))
