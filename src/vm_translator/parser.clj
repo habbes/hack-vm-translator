@@ -80,12 +80,14 @@
 
 (defn match-and-parse
   "Tests source lazily against each regex in re-f-pairs and return
-  the result cmd-ctx of the first match or nil"
+  the result cmd-ctx of the first match or throw exception"
   [source re-f-pairs]
-  (->> re-f-pairs
-       (map (fn [[re f]] (parse-if-match source re f)))
-       (filter identity)
-       first))
+  (if-let [parsed (->> re-f-pairs
+                  (map (fn [[re f]] (parse-if-match source re f)))
+                  (filter identity)
+                  first)]
+    parsed
+    (throw (Exception. (str "Cannot parse " source)))))
 
 (defn parse-command
   "Parses a line of vm source code into a command context object based

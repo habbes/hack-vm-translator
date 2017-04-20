@@ -75,9 +75,11 @@
         (is (= {:source "cmd"
                 :command "cmd"}
                cmd))))
-    (testing "returns in nil if there is no match"
-      (let [source "this has no match" cmd (match-and-parse source re-f-pairs)]
-        (is (= nil cmd))))))
+    (testing "throws exception if there is no match"
+      (let [source "this has no match"]
+        (is (thrown-with-msg? Exception
+                              #"Cannot parse"
+                              (match-and-parse source re-f-pairs)))))))
 
 (deftest parse-command-with-def-matchers
   (let [segments ["argument" "this" "that" "local"
@@ -176,9 +178,12 @@
     (let [source "// this is a comment" cmd (parse-command source)]
       (is (= nil cmd)))
     (let [source "\t // this is a comment" cmd (parse-command source)]
-      (is (= nil cmd)))
-    (let [source "push local" cmd (parse-command source)]
-      (is (= nil cmd)))
-    (let [source "this is not a command// push argument 1" cmd (parse-command source)]
-      (is (= nil cmd)))))
+      (is (= nil cmd))))
+
+  (testing "throws exception if no match found for source"
+    (let [sources ["push local" "this is not a command// push argument 1"]]
+      (doseq [source sources]
+        (is (thrown-with-msg? Exception
+                              #"Cannot parse"
+                              (parse-command source)))))))
 
