@@ -86,7 +86,7 @@
 
 (defn push-zeros
   "Generats asm code to push 0 the specifed number of times
-  to the stack and updated the stack pointer"
+  to the stack and updated the stack pointer. n should be > 0"
   [n]
   (join-lines ["@SP"
                 "A=M"
@@ -436,8 +436,10 @@
 (defn translate-function
   "Translates 'function' command to assembly."
   [{:keys [function vars] :as cmd}]
-  (join-lines [(label function)
-               (push-zeros vars)]))
+  (if (> vars 0)
+    (join-lines [(label function)
+                 (push-zeros vars)])
+    (label function)))
 
 (defn translate-return
   "Translates 'return' command to assembly."

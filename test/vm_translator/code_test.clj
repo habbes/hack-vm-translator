@@ -376,7 +376,14 @@
                                 "M=0"
                                 "D=A+1"
                                 "@SP"
-                                "M=D"])))))
+                                "M=D"]))))
+    (testing "with 0 vars"
+      (let [cmd {:source "function Sys.init 0"
+                 :command "function"
+                 :function "Sys.init"
+                 :vars 0}
+            code (translate cmd)]
+        (is (= code "(Sys.init)")))))
 
   (testing "return command"
     (let [cmd {:source "return"
