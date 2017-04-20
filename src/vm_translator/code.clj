@@ -453,7 +453,7 @@
 (defn translate-call
   "Translates 'call' vm command to hack assembly."
   [{func :function args :args {ic :instruction-number} :context}]
-  (let [return-addr (+ ic 44) ; this command generates 43 asm instructions
+  (let [return-addr (+ ic 43) ; this command generates 43 asm instructions
         arg-offset (+ args FRAME-SIZE)]
     (join-lines [(save-caller-frame return-addr)
                  (reposition-callee-arg arg-offset)
