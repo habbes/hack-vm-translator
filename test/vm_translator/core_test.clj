@@ -142,11 +142,12 @@ M=M-1
                                "M=M+1"
                                ""])))))
 
-  (testing "Returns nil on when source is invalid"
+  (testing "Throw exception when source is invalid"
     (let [line "not valid command"
-          ctx {:instruction-number 0 :line-number 1}
-          out (translate-line line ctx)]
-      (is (= out nil)))))
+          ctx {:instruction-number 0 :line-number 1}]
+      (is (thrown-with-msg? Exception
+                                #"Cannot parse"
+                                (translate-line line ctx))))))
 
 (defn create-sample-output-handler
   "Creates an output handler fn that appends the output
