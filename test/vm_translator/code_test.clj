@@ -443,7 +443,7 @@
           code (translate cmd)]
       (is (= code (s/join "\n" [;; save caller's frame onto stack
                                 ;push return address
-                                "@50" ;4 + 45 instructions in this block + 1  (next instr)
+                                "@48" ;4 + 43 instructions in this block + 1  (next instr)
                                 "D=A"
                                 "@SP"
                                 "A=M"
@@ -483,10 +483,8 @@
                                 "@SP"
                                 "M=M+1"
                                 ;; reposition callee's ARG
-                                "@3"
+                                "@8" ; 3 (args) + 5 (frame size)
                                 "D=A"
-                                "@5"
-                                "D=D+A"
                                 "@SP"
                                 "D=M-D"
                                 "@ARG"

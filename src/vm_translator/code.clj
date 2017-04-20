@@ -3,6 +3,8 @@
 
 ;; base address of temp segment
 (def TEMP-BASE 5)
+;; the number of cells in a function caller's saved frame
+(def FRAME-SIZE 5)
 
 ;; map linking pointer segment index to corresponding base pointer
 (def pointer-segment-index-map
@@ -194,6 +196,30 @@
   (join-lines ["@R15"
                "A=M"
                "0;JMP"]))
+
+(defn- save-caller-frame
+  "Saves the caller's frame onto the stack"
+  [return-addr]
+  (let [segments ["LCL" "ARG" "THIS" "THAT"]]
+    (join-lines [(at return-addr)
+                 "D=A"
+                 (push-d-inc-sp)
+                 (join-lines
+                   (map
+                     #(join-lines [(at %)
+                                   "D=M"
+                                   (push-d-inc-sp)])
+                     segments))])))
+
+(defn- reposition-callee-arg
+  "Repositions the ARG pointer of the callee."
+  [offset]
+  (join-lines [(at offset)
+               "D=A"
+               "@SP"
+               "D=M-D"
+               "@ARG"
+               "M=D"]))
 
 ;; translators for the different commands
 
@@ -405,23 +431,33 @@
   [{:keys [label context] :as cmd}]
   (let [label (prefix-label label context)]
     (join-lines [(pop-d-dec-sp)
-                  (at label)
-                  "D;JNE"])))
+                 (at label)
+                 "D;JNE"])))
 
 (defn translate-function
   "Translates 'function' command to assembly."
   [{:keys [function vars] :as cmd}]
   (join-lines [(label function)
-                (push-zeros vars)]))
+               (push-zeros vars)]))
 
 (defn translate-return
   "Translates 'return' command to assembly."
   [cmd]
   (join-lines [(copy-frame-and-return-addr)
-                (reposition-return-value)
-                (restore-caller-sp)
-                (restore-caller-segments)
-                (return-to-caller)]))
+               (reposition-return-value)
+               (restore-caller-sp)
+               (restore-caller-segments)
+               (return-to-caller)]))
+
+(defn translate-call
+  "Translates 'call' vm command to hack assembly."
+  [{func :function args :args {ic :instruction-number} :context}]
+  (let [return-addr (+ ic 44) ; this command generates 43 asm instructions
+        arg-offset (+ args FRAME-SIZE)]
+    (join-lines [(save-caller-frame return-addr)
+                 (reposition-callee-arg arg-offset)
+                 (at func)
+                 "0;JMP"])))
 
 (defn find-translator
   "Finds the appropriate function to translate the given command"
@@ -443,6 +479,7 @@
     "if-goto" translate-if-goto
     "function" translate-function
     "return" translate-return
+    "call" translate-call
     nil))
 
 (defn translate
