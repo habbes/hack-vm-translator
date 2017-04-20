@@ -389,7 +389,6 @@
 
 (defn translate-push
   "Translates the 'push' command"
-  ; TODO implement for other segments and for nil
   [{:keys [segment index] :as cmd}]
   (case segment
     "constant" (translate-push-constant cmd)
@@ -480,7 +479,7 @@
     "function" translate-function
     "return" translate-return
     "call" translate-call
-    nil))
+    nil nil))
 
 (defn translate
   "Translates the specific cmd to hack assembly. Returns nil if

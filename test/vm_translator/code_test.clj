@@ -493,6 +493,12 @@
                                 "@SomeClass.test"
                                 "0;JMP"])))))
 
+  (testing "empty command"
+    (let [cmd {:source nil
+               :command nil}
+          code (translate cmd)]
+      (is (= code nil))))
+
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
