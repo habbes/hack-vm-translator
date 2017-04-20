@@ -13,8 +13,7 @@
   (-> line
       parser/parse-command
       (assoc :context ctx)
-      code/translate-with-comment
-      (str "\n")))
+      code/translate-with-comment))
 
 (defn translate-lines
   "Translates each line in the lines seq and pass each output
@@ -28,7 +27,7 @@
             new-ctx (-> ctx
                         context/inc-line
                         (context/inc-instruction inst-count))]
-        (output-handler out)
+        (if out (output-handler out))
         (recur (inc n) new-ctx)))))
 
 (defn create-writer-output-handler
@@ -36,7 +35,8 @@
   to the specified wrtr"
   [wrtr]
   (fn [out]
-    (if-let [out out] (.write wrtr out))))
+   (.write wrtr
+           (str out "\n"))))
 
 (defn translate-source
   "Reads vm source code from rdr and writes the output

@@ -139,8 +139,7 @@ M=M-1
                                "A=M"
                                "M=D"
                                "@SP"
-                               "M=M+1"
-                               ""])))))
+                               "M=M+1"])))))
 
   (testing "Throw exception when source is invalid"
     (let [line "not valid command"
@@ -154,7 +153,7 @@ M=M-1
   to the specified out-atom"
   [out-atom]
   (fn [out]
-    (swap! out-atom (fn [old] (str old out)))))
+    (swap! out-atom (fn [old] (str old out "\n")))))
 
 (deftest translate-lines-test
   (testing "Translate seq of source lines into asm output string"
@@ -185,16 +184,8 @@ M=M-1
   (testing "Creates a handler that writers output to an io writer"
     (let [wrtr (java.io.StringWriter.)
           handler (create-writer-output-handler wrtr)]
-      (handler "@SP\nA=M\nD=M\n")
-      (handler "D=D+1\n")
-      (is (= (.toString wrtr)
-             "@SP\nA=M\nD=M\nD=D+1\n"))))
-  (testing "Skips nil"
-    (let [wrtr (java.io.StringWriter.)
-          handler (create-writer-output-handler wrtr)]
-      (handler "@SP\nA=M\nD=M\n")
-      (handler nil)
-      (handler "D=D+1\n")
+      (handler "@SP\nA=M\nD=M")
+      (handler "D=D+1")
       (is (= (.toString wrtr)
              "@SP\nA=M\nD=M\nD=D+1\n")))))
 
