@@ -20,6 +20,8 @@
     (let [command (clean-line "// this is a test")]
       (is (= "" command)))
     (let [command (clean-line "  //this is a test")]
+      (is (= "" command)))
+    (let [command (clean-line "//")]
       (is (= "" command))))
   (testing "ignores whitespace and comments returns command only"
     (let [command (clean-line "add // this is a test")]

@@ -23,6 +23,7 @@
   (-> line
       (s/split #"//")
       first
+      str   ; cast to string in case nil is returned from empty vector
       s/trim
       (s/replace #"\s+" " ")))
 
