@@ -434,6 +434,67 @@
                                 "A=M"
                                 "0;JMP"])))))
 
+  (testing "call command"
+    (let [cmd {:source "call SomeClass.test 3"
+               :command "call"
+               :function "SomeClass.test"
+               :args 3
+               :context {:instruction-number 4}}
+          code (translate cmd)]
+      (is (= code (s/join "\n" [;; save caller's frame onto stack
+                                ;push return address
+                                "@50" ;4 + 45 instructions in this block + 1  (next instr)
+                                "D=A"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"
+                                ; push LCL
+                                "@LCL"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"
+                                ; push ARG
+                                "@ARG"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"
+                                ; push THIS
+                                "@THIS"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"
+                                ; push THAT
+                                "@THAT"
+                                "D=M"
+                                "@SP"
+                                "A=M"
+                                "M=D"
+                                "@SP"
+                                "M=M+1"
+                                ;; reposition callee's ARG
+                                "@3"
+                                "D=A"
+                                "@5"
+                                "D=D+A"
+                                "@SP"
+                                "D=M-D"
+                                "@ARG"
+                                "M=D"
+                                ;; goto function
+                                "@SomeClass.test"
+                                "0;JMP"])))))
+
   (testing "returns nil on invalid command"
     (let [cmd {} code (translate cmd)]
       (is (= code nil)))
