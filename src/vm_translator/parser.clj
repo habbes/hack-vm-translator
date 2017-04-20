@@ -2,6 +2,8 @@
   (:require [clojure.string :as s]))
 
 
+; regex used to parse empty lines
+(def empty-re #"^$")
 ; regex used to parse arithmetic and logic commands
 (def arithmetic-re #"(add|sub|neg|eq|gt|lt|and|or|not)")
 ; regex used to parse push and pop commands
@@ -23,6 +25,11 @@
       first
       s/trim
       (s/replace #"\s+" " ")))
+
+(defn parse-empty-command
+  "Parse an empty source line"
+  [cmd-ctx parts]
+  cmd-ctx)
 
 (defn parse-arithmetic-command
   "Parse an arithmetic or logic command"
@@ -62,7 +69,8 @@
 
 ;Pairs of regexes and their corresponding parser fns
 (def matchers
-  [[arithmetic-re parse-arithmetic-command]
+  [[empty-re parse-empty-command]
+   [arithmetic-re parse-arithmetic-command]
    [push-pop-re parse-push-pop-command]
    [branching-re parse-branching-command]
    [function-re parse-function-command]

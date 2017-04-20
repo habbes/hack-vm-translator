@@ -171,14 +171,11 @@
               :index 0}
               cmd))))
   (testing "returns nil if no command or no match"
-    (let [source "" cmd (parse-command source)]
-      (is (= nil cmd)))
-    (let [source "   " cmd (parse-command source)]
-      (is (= nil cmd)))
-    (let [source "// this is a comment" cmd (parse-command source)]
-      (is (= nil cmd)))
-    (let [source "\t // this is a comment" cmd (parse-command source)]
-      (is (= nil cmd))))
+    (let [sources ["" "   " "// this is a comment" "\t // this is a comment"]]
+      (doseq [source sources]
+        (is (= {:source nil
+                :command nil}
+               (parse-command source))))))
 
   (testing "throws exception if no match found for source"
     (let [sources ["push local" "this is not a command// push argument 1"]]
