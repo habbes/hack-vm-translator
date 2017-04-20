@@ -10,11 +10,11 @@
   "Translates line of vm source code to hack assembly code.
   Returns nil if source code is invalid."
   [line ctx]
-  (if-let [cmd (parser/parse-command line)]
-    (str
-      (code/translate-with-comment (assoc cmd :context ctx))
-      "\n")
-    nil))
+  (-> line
+      parser/parse-command
+      (assoc :context ctx)
+      code/translate-with-comment
+      (str "\n")))
 
 (defn translate-lines
   "Translates each line in the lines seq and pass each output
