@@ -479,7 +479,9 @@
     "function" translate-function
     "return" translate-return
     "call" translate-call
-    nil nil))
+    nil nil
+    (throw (Exception.
+             (str "Cannot translate invalid command " command)))))
 
 (defn translate
   "Translates the specific cmd to hack assembly. Returns nil if

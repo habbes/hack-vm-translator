@@ -499,11 +499,11 @@
           code (translate cmd)]
       (is (= code nil))))
 
-  (testing "returns nil on invalid command"
-    (let [cmd {} code (translate cmd)]
-      (is (= code nil)))
-    (let [cmd nil code (translate cmd)]
-      (is (= code nil)))))
+  (testing "throws exception on invalid command"
+    (doseq [cmd [{:command "invalid"}]]
+      (is (thrown-with-msg? Exception
+                            #"Cannot translate invalid command"
+                            (translate cmd))))))
 
 (deftest translate-with-comment-test
   (testing "Adds source vm code as comment before output code"
