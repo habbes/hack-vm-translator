@@ -16,9 +16,10 @@
   "Increments the instruction number by the specifed count"
   ([ctx]
    (inc-instruction ctx 1))
-  ([ctx count]
-   (update ctx
-           :instruction-number + count)))
+  ([{ic :instruction-number :or {ic -1}
+     :as ctx} count]
+   (assoc ctx :instruction-number
+     (+ ic count))))
 
 (defn set-class
   "Sets the current class for the context"

@@ -36,7 +36,15 @@
           new-ctx (inc-instruction ctx 12)]
       (is (= new-ctx {:line-number 6
                       :instruction-number 16
-                      :class "Class"})))))
+                      :class "Class"}))))
+  (testing "Increments instruction to -1 if context
+    has no instruction-number"
+    (let [ctx {:line-number 6
+               :class "Class"}
+          new-ctx (inc-instruction ctx 2)]
+      (is (= new-ctx {:line-number 6
+                      :class "Class"
+                      :instruction-number 1})))))
 
 (deftest set-class-test
   (testing "Adds class key to context"
