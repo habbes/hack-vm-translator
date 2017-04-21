@@ -457,13 +457,13 @@
 
 (defn translate-return
   "Translates 'return' command to assembly."
-  [cmd]
+  [{context :context}]
   [(join-lines [(copy-frame-and-return-addr)
                (reposition-return-value)
                (restore-caller-sp)
                (restore-caller-segments)
                (return-to-caller)])
-   (:context cmd)])
+   (ctx/unset-function context)])
 
 (defn translate-call
   "Translates 'call' vm command to hack assembly."

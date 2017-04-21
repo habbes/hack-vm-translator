@@ -390,7 +390,9 @@
 
   (testing "return command"
     (let [cmd {:source "return"
-               :command "return"}
+               :command "return"
+               :context {:function "Math.pow"
+                         :instruction-number 10}}
           [code ctx] (translate cmd)]
       (is (= code (s/join "\n" [; store the top address of the current frame
                                 "@LCL"
@@ -442,7 +444,9 @@
                                 ; goto return address
                                 "@R15"
                                 "A=M"
-                                "0;JMP"])))))
+                                "0;JMP"])))
+      (testing "unsets function from context"
+        (is (= (contains? ctx :function) false)))))
 
   (testing "call command"
     (let [cmd {:source "call SomeClass.test 3"
