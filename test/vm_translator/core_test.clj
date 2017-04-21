@@ -131,7 +131,7 @@ M=M-1
   (testing "translates source vm line to hack assembly with comment"
     (let [line "push constant 3"
           ctx {:instruction-number 0 :line-number 1}
-          out (translate-line line ctx)]
+          [out ctx] (translate-line line ctx)]
       (is (= out (s/join "\n" ["// push constant 3"
                                "@3"
                                "D=A"

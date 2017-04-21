@@ -21,12 +21,8 @@
   [lines output-handler ctx]
   (loop [n 0 ctx ctx]
     (if-let [line (nth lines n nil)]
-      (let [out (translate-line line ctx)
-            ;TODO this is really messy code, please cleanup
-            inst-count (max 0 (- (if-let [out out] (count (s/split-lines out)) 0) 1))
-            new-ctx (-> ctx
-                        context/inc-line
-                        (context/inc-instruction inst-count))]
+      (let [[out ctx] (translate-line line ctx)
+            new-ctx (context/inc-line ctx)]
         (if out (output-handler out))
         (recur (inc n) new-ctx)))))
 
