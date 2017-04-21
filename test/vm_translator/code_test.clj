@@ -6,7 +6,7 @@
 (deftest translate-test
   (testing "add command"
     (let [cmd {:source "add" :command "add"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -16,7 +16,7 @@
                                 "M=M-1"])))))
   (testing "sub command"
     (let [cmd {:source "sub" :command "sub"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -26,14 +26,14 @@
                                 "M=M-1"])))))
   (testing "neg command"
     (let [cmd {:source "neg" :command "neg"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "M=-M"])))))
 
   (testing "and command"
     (let [cmd {:source "and" :command "and"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -44,7 +44,7 @@
 
   (testing "or command"
     (let [cmd {:source "or" :command "or"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -55,7 +55,7 @@
 
   (testing "not command"
     (let [cmd {:source "not" :command "not"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "M=!M"])))))
@@ -63,7 +63,7 @@
   (testing "eq command"
     (let [cmd {:source "eq" :command "eq"
                :context {:instruction-number 5}}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -87,7 +87,7 @@
   (testing "gt command"
     (let [cmd {:source "gt" :command "gt"
                :context {:instruction-number 4}}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -111,7 +111,7 @@
   (testing "lt command"
     (let [cmd {:source "lt" :command "lt"
                :context {:instruction-number 6}}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -137,7 +137,7 @@
                :command "push"
                :segment "constant"
                :index 17}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@17"
                                 "D=A"
                                 "@SP"
@@ -156,7 +156,7 @@
                    :command "push"
                    :segment segment
                    :index 3}
-              code (translate cmd)]
+              [code ctx] (translate cmd)]
           (is (= code (s/join "\n" ["@3"
                                     "D=A"
                                     (str "@" base)
@@ -178,7 +178,7 @@
                    :command "pop"
                    :segment segment
                    :index 7}
-              code (translate cmd)]
+              [code ctx] (translate cmd)]
           (is (= code (s/join "\n" ["@7"
                                     "D=A"
                                     (str "@" base)
@@ -200,7 +200,7 @@
                :command "push"
                :segment "temp"
                :index 4}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@9"
                                 "D=M"
                                 "@SP"
@@ -214,7 +214,7 @@
                :command "pop"
                :segment "temp"
                :index 3}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "A=M-1"
                                 "D=M"
@@ -228,7 +228,7 @@
                :command "push"
                :segment "pointer"
                :index 0}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@THIS"
                                 "D=M"
                                 "@SP"
@@ -240,7 +240,7 @@
                :command "push"
                :segment "pointer"
                :index 1}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@THAT"
                                 "D=M"
                                 "@SP"
@@ -254,7 +254,7 @@
                :command "pop"
                :segment "pointer"
                :index 0}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "M=M-1"
                                 "A=M"
@@ -266,7 +266,7 @@
                :command "pop"
                :segment "pointer"
                :index 1}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "M=M-1"
                                 "A=M"
@@ -280,7 +280,7 @@
                :segment "static"
                :index 3
                :context {:class "Foo"}}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@Foo.3"
                                 "D=M"
                                 "@SP"
@@ -295,7 +295,7 @@
                :segment "static"
                :index 5
                :context {:class "Bar"}}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "M=M-1"
                                 "A=M"
@@ -307,7 +307,7 @@
     (let [cmd {:source "label END"
                :command "label"
                :label "END"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["(END)"]))))
     (testing "prefixes current function name within function context"
       (let [cmd {:source "label LOOP"
@@ -315,14 +315,14 @@
                  :label "LOOP"
                  :context {:class "MyClass"
                            :function "MyClass.func"} }
-            code (translate cmd)]
+            [code ctx] (translate cmd)]
         (is (= code "(MyClass.func$LOOP)")))))
 
   (testing "goto command"
     (let [cmd {:source "goto LOOP"
                :command "goto"
                :label "LOOP"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@LOOP"
                                 "0;JMP"]))))
     (testing "prefixes function name within function context"
@@ -331,7 +331,7 @@
                  :label "BASE"
                  :context {:class "Foo"
                            :function "Foo.funct"}}
-            code (translate cmd)]
+            [code ctx] (translate cmd)]
         (is (= code (s/join "\n" ["@Foo.funct$BASE"
                                   "0;JMP"]))))))
 
@@ -339,7 +339,7 @@
     (let [cmd {:source "if-goto LOOP_END"
                :command "if-goto"
                :label "LOOP_END"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["@SP"
                                 "M=M-1"
                                 "A=M"
@@ -352,7 +352,7 @@
                  :label "END"
                  :context {:class "Foo"
                            :function "Foo.funct"}}
-            code (translate cmd)]
+            [code ctx] (translate cmd)]
         (is (= code (s/join "\n" ["@SP"
                                   "M=M-1"
                                   "A=M"
@@ -365,7 +365,7 @@
                :command "function"
                :function "MyClass.func"
                :vars 3}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" ["(MyClass.func)"
                                 "@SP"
                                 "A=M"
@@ -382,13 +382,13 @@
                  :command "function"
                  :function "Sys.init"
                  :vars 0}
-            code (translate cmd)]
+            [code ctx] (translate cmd)]
         (is (= code "(Sys.init)")))))
 
   (testing "return command"
     (let [cmd {:source "return"
                :command "return"}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" [; store the top address of the current frame
                                 "@LCL"
                                 "D=M"
@@ -447,7 +447,7 @@
                :function "SomeClass.test"
                :args 3
                :context {:instruction-number 4}}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code (s/join "\n" [;; save caller's frame onto stack
                                 ;push return address
                                 "@47" ;4 + 43 instructions in this block
@@ -503,7 +503,7 @@
   (testing "empty command"
     (let [cmd {:source nil
                :command nil}
-          code (translate cmd)]
+          [code ctx] (translate cmd)]
       (is (= code nil))))
 
   (testing "throws exception on invalid command"
@@ -518,7 +518,7 @@
                :command "push"
                :segment "constant"
                :index 17}
-          code (translate-with-comment cmd)]
+          [code ctx] (translate-with-comment cmd)]
       (is (= code (s/join "\n" ["// push constant 17"
                                 "@17"
                                 "D=A"
@@ -530,5 +530,5 @@
   (testing "Does not add comment if command is empty"
     (let [cmd {:source nil
                :command nil}
-          code (translate-with-comment cmd)]
+          [code ctx] (translate-with-comment cmd)]
       (is (= code nil)))))
