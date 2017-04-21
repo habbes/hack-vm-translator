@@ -376,7 +376,10 @@
                                 "M=0"
                                 "D=A+1"
                                 "@SP"
-                                "M=D"]))))
+                                "M=D"])))
+      (testing "sets context function"
+        (is (= (:function ctx) "MyClass.func"))))
+
     (testing "with 0 vars"
       (let [cmd {:source "function Sys.init 0"
                  :command "function"

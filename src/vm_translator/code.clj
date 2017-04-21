@@ -1,5 +1,6 @@
 (ns vm-translator.code
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [vm-translator.context :as ctx]))
 
 ;; base address of temp segment
 (def TEMP-BASE 5)
@@ -452,7 +453,7 @@
     (join-lines [(label function)
                  (push-zeros vars)])
     (label function))
-  context])
+  (ctx/set-function context function)])
 
 (defn translate-return
   "Translates 'return' command to assembly."
