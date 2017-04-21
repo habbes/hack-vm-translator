@@ -10,10 +10,12 @@
   "Translates line of vm source code to hack assembly code.
   Returns nil if source code is invalid."
   [line ctx]
-  (-> line
-      parser/parse-command
-      (assoc :context ctx)
-      code/translate-with-comment))
+  (let [[out ctx]
+        (-> line
+            parser/parse-command
+            (assoc :context ctx)
+            code/translate-with-comment)]
+    [out (context/inc-line ctx)]))
 
 (defn translate-lines
   "Translates each line in the lines seq and pass each output
@@ -21,10 +23,10 @@
   [lines output-handler ctx]
   (loop [n 0 ctx ctx]
     (if-let [line (nth lines n nil)]
-      (let [[out ctx] (translate-line line ctx)
-            new-ctx (context/inc-line ctx)]
-        (if out (output-handler out))
-        (recur (inc n) new-ctx)))))
+      (let [[out new-ctx] (translate-line line ctx)]
+        (recur (inc n) (do (if out (output-handler out))
+                         new-ctx)))
+    ctx)))
 
 (defn create-writer-output-handler
   "Returns an output-handler which writes ouput

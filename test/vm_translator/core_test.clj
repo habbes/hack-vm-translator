@@ -139,7 +139,9 @@ M=M-1
                                "A=M"
                                "M=D"
                                "@SP"
-                               "M=M+1"])))))
+                               "M=M+1"])))
+      (testing "increments line number"
+        (is (= (:line-number ctx) 2)))))
 
   (testing "Throw exception when source is invalid"
     (let [line "not valid command"
@@ -160,24 +162,28 @@ M=M-1
     (let [lines (s/split-lines sample-source)
           output (atom "")
           handler (create-sample-output-handler output)
-          ctx {:line-number 1 :instruction-number 0}]
-      (translate-lines lines handler ctx)
-      (is (= @output sample-output))))
+          ctx {:line-number 1 :instruction-number 0}
+          final-ctx (translate-lines lines handler ctx)]
+      (is (= @output sample-output))
+      (is (= (:line-number final-ctx 4)))
+      (is (= (:instruction-number final-ctx 21)))))
 
   (testing "Translate lines including comments"
     (let [lines (s/split-lines sample-source-with-comments)
           output (atom "")
           handler (create-sample-output-handler output)
-          ctx {:line-number 1 :instruction-number 0}]
-      (translate-lines lines handler ctx)
-      (is (= @output sample-output))))
+          ctx {:line-number 0 :instruction-number -1}
+          final-ctx (translate-lines lines handler ctx)]
+      (is (= @output sample-output))
+      (is (= (:line-number final-ctx) 8))
+      (is (= (:instruction-number final-ctx) 20))))
 
   (testing "Translate lines including comparison commands"
     (let [lines (s/split-lines sample-source-eq)
           output (atom "")
           handler (create-sample-output-handler output)
-          ctx {:line-number 0 :instruction-number -1}]
-      (translate-lines lines handler ctx)
+          ctx {:line-number 0 :instruction-number -1}
+          final-ctx (translate-lines lines handler ctx)]
       (is (= @output sample-output-eq)))))
 
 (deftest create-writer-output-handler-test
