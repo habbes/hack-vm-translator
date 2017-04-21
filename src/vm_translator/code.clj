@@ -20,8 +20,8 @@
   "Generates asm code to pop value from stack to D register"
   []
   (join-lines ["@SP"
-                "A=M-1"
-                "D=M"]))
+               "A=M-1"
+               "D=M"]))
 
 (defn- dec-a
   "Generates asm code to decrement A register"
@@ -33,71 +33,71 @@
   then decrements A register"
   []
   (join-lines [(pop-to-d)
-                (dec-a)]))
+               (dec-a)]))
 
 (defn- push-from-d
   "Generates asm code to push value to stack from D register"
   []
   (join-lines ["@SP"
-                "A=M"
-                "M=D"]))
+               "A=M"
+               "M=D"]))
 
 (defn- inc-sp
   "Generates asm code to increment stack pointer"
   []
   (join-lines ["@SP"
-                "M=M+1"]))
+               "M=M+1"]))
 
 (defn- push-d-inc-sp
   "Generates asm code to push value to stack from D then
   increment stack pointer."
   []
   (join-lines [(push-from-d)
-                (inc-sp)]))
+               (inc-sp)]))
 
 (defn- pop-d-dec-sp
   "Generates asm code to pop value from stack into D and
   decrement stack pointer."
   []
   (join-lines ["@SP"
-                "M=M-1"
-                "A=M"
-                "D=M"]))
+               "M=M-1"
+               "A=M"
+               "D=M"]))
 
 (defn- dec-sp
   "Generates asm code to decrement stack pointer"
   []
   (join-lines ["@SP"
-                "M=M-1"]))
+               "M=M-1"]))
 
 (defn- inc-a-update-sp
   "Generates asm code to update the stack pointer by first
   incrementing the A register"
   []
   (join-lines ["D=A+1"
-                "@SP"
-                "M=D"]))
+               "@SP"
+               "M=D"]))
 
 (defn- point-a-to-stack-top
   "Generates asm code to set the A register to point to
   the value at the top of the stack."
   []
   (join-lines ["@SP"
-                "A=M-1"]))
+               "A=M-1"]))
 
 (defn push-zeros
   "Generats asm code to push 0 the specifed number of times
   to the stack and updated the stack pointer. n should be > 0"
   [n]
   (join-lines ["@SP"
-                "A=M"
-                "M=0"
-                (join-lines
-                        (repeat (- n 1)
-                                "A=A+1\nM=0"))
-                "D=A+1"
-                "@SP"
-                "M=D"]))
+               "A=M"
+               "M=0"
+               (join-lines
+                 (repeat (- n 1)
+                         "A=A+1\nM=0"))
+               "D=A+1"
+               "@SP"
+               "M=D"]))
 
 (defn- at
   "Generates asm code to set A register to specified address."
@@ -113,32 +113,32 @@
   "Generates asm code that stores M[base + index] in D."
   [base index]
   (join-lines [(at index)
-                "D=A"
-                (at base)
-                "A=D+M"
-                "D=M"]))
+               "D=A"
+               (at base)
+               "A=D+M"
+               "D=M"]))
 
 (defn- store-segment-addr-in-d
   "Generates asm code that stores address base + index in D."
   [base index]
   (join-lines [(at index)
-                "D=A"
-                (at base)
-                "A=D+M"
-                "D=A"]))
+               "D=A"
+               (at base)
+               "A=D+M"
+               "D=A"]))
 
 (defn- store-d-in-r13-addr
   "Generates asm code that stores D in M[r13]"
   []
   (join-lines ["@R13"
-                "A=M"
-                "M=D"]))
+               "A=M"
+               "M=D"]))
 
 (defn- store-d-in-r13
   "Generates asm code that stores D in r13."
   []
   (join-lines ["@R13"
-                "M=D"]))
+               "M=D"]))
 
 (defn- prefix-label
   "Prefix label if generated within a function context"
@@ -153,31 +153,31 @@
   respectively."
   []
   (join-lines ["@LCL"
-                "D=M"
-                "@R14"
-                "M=D"
-                "@5"
-                "A=D-A"
-                "D=M"
-                "@R15"
-                "M=D"]))
+               "D=M"
+               "@R14"
+               "M=D"
+               "@5"
+               "A=D-A"
+               "D=M"
+               "@R15"
+               "M=D"]))
 
 (defn- reposition-return-value
   "Repositions the return value of the function
   to the current base address of ARG."
   []
   (join-lines [(pop-to-d)
-                "@ARG"
-                "A=M"
-                "M=D"]))
+               "@ARG"
+               "A=M"
+               "M=D"]))
 
 (defn- restore-caller-sp
   "Restores the SP of the caller"
   []
   (join-lines ["@ARG"
-                "D=M+1"
-                "@SP"
-                "M=D"]))
+               "D=M+1"
+               "@SP"
+               "M=D"]))
 
 (defn- restore-caller-segments
   "Restores LCL, ARG, THIS and THAT segments of
@@ -185,10 +185,10 @@
   []
   (let [segments ["THAT" "THIS" "ARG" "LCL"]]
     (join-lines (map #(join-lines ["@R14"
-                                     "AM=M-1"
-                                     "D=M"
-                                     (at %)
-                                     "M=D"])
+                                   "AM=M-1"
+                                   "D=M"
+                                   (at %)
+                                   "M=D"])
                       segments))))
 
 (defn- return-to-caller
@@ -207,9 +207,10 @@
                  (push-d-inc-sp)
                  (join-lines
                    (map
-                     #(join-lines [(at %)
-                                   "D=M"
-                                   (push-d-inc-sp)])
+                     #(join-lines
+                        [(at %)
+                        "D=M"
+                        (push-d-inc-sp)])
                      segments))])))
 
 (defn- reposition-callee-arg
@@ -319,16 +320,16 @@
   "Translates the 'push constant' command to assembly"
   [{:keys [index context]}]
   (join-lines [(at index)
-                "D=A"
-                (push-from-d)
-                (inc-sp)]))
+               "D=A"
+               (push-from-d)
+               (inc-sp)]))
 
 (defn translate-push-temp
   "Translates the 'push temp' command to assembly"
   [{:keys [index context]}]
   (join-lines [(at (+ TEMP-BASE index))
-                "D=M"
-                (push-d-inc-sp)]))
+               "D=M"
+               (push-d-inc-sp)]))
 
 (defn translate-pop-temp
   "Translates the 'pop temp' command to assembly"
@@ -343,16 +344,16 @@
   base should be THIS or THAT"
   [base]
   (join-lines [(at base)
-                "D=M"
-                (push-d-inc-sp)]))
+               "D=M"
+               (push-d-inc-sp)]))
 
 (defn- translate-pop-pointer-base
   "Translate 'pop pointer' based on the specified base pointer.
   base should be THIS or THAT"
   [base]
   (join-lines [(pop-d-dec-sp)
-                (at base)
-                "M=D"]))
+               (at base)
+               "M=D"]))
 
 (defn translate-push-pointer
   "Translate the 'push pointer' command"
@@ -370,8 +371,8 @@
 (defn translate-push-static
   [{index :index {class :class :as context} :context}]
   (join-lines [(at (str class "." index))
-                "D=M"
-                (push-d-inc-sp)]))
+               "D=M"
+               (push-d-inc-sp)]))
 
 (defn translate-pop-static
   [{index :index {class :class} :context}]
@@ -424,9 +425,9 @@
 
 (defn translate-label
   "Translates 'label' command to hack assembly."
-  [{:keys [label context] :as cmd}]
-  [(let [label (prefix-label label context)]
-    (str "(" label ")"))
+  [{lbl :label context :context}]
+  [(let [lbl (prefix-label lbl context)]
+    (label lbl))
    context])
 
 (defn translate-goto
@@ -434,7 +435,7 @@
   [{:keys [label context] :as cmd}]
   [(let [label (prefix-label label context)]
     (join-lines [(at label)
-                  "0;JMP"]))
+                 "0;JMP"]))
    context])
 
 (defn translate-if-goto
@@ -459,10 +460,10 @@
   "Translates 'return' command to assembly."
   [{context :context}]
   [(join-lines [(copy-frame-and-return-addr)
-               (reposition-return-value)
-               (restore-caller-sp)
-               (restore-caller-segments)
-               (return-to-caller)])
+                (reposition-return-value)
+                (restore-caller-sp)
+                (restore-caller-segments)
+                (return-to-caller)])
    (ctx/unset-function context)])
 
 (defn translate-call
