@@ -24,8 +24,9 @@
   (loop [n 0 ctx ctx]
     (if-let [line (nth lines n nil)]
       (let [[out new-ctx] (translate-line line ctx)]
-        (recur (inc n) (do (if out (output-handler out))
-                         new-ctx)))
+        (recur (inc n)
+               (do (if out (output-handler out))
+                 new-ctx)))
     ctx)))
 
 (defn create-writer-output-handler
