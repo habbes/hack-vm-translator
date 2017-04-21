@@ -226,53 +226,59 @@
 (defn translate-add
   "Translates the'add' vm command to hack assembly"
   [cmd]
-  (join-lines [(pop-to-d-dec-a)
+  [(join-lines [(pop-to-d-dec-a)
                 "M=D+M"
-                (dec-sp)]))
+                (dec-sp)])
+   (:context cmd)])
 
 (defn translate-sub
   "Translates the 'sub' vm command to hack assembly"
   [cmd]
-  (join-lines [(pop-to-d-dec-a)
+  [(join-lines [(pop-to-d-dec-a)
                 "M=M-D"
-                (dec-sp)]))
+                (dec-sp)])
+   (:context cmd)])
 
 (defn translate-neg
   "Translates the 'neg' vm command to hack assembly"
   [cmd]
-  (join-lines [(point-a-to-stack-top)
-                "M=-M"]))
+  [(join-lines [(point-a-to-stack-top)
+                "M=-M"])
+   (:context cmd)])
 
 (defn translate-and
   "Transaltes the 'and' vm command to hack assembly.
   0x0000 is false and 0xffff is true."
   [cmd]
-  (join-lines [(pop-to-d-dec-a)
+  [(join-lines [(pop-to-d-dec-a)
                 "M=D&M"
-                (dec-sp)]))
+                (dec-sp)])
+   (:context cmd)])
 
 (defn translate-or
   "Translates the 'or' vm command to hack assembly.
   0x0000 is false and 0xffff is true."
   [cmd]
-  (join-lines [(pop-to-d-dec-a)
+  [(join-lines [(pop-to-d-dec-a)
                 "M=D|M"
-                (dec-sp)]))
+                (dec-sp)])
+   (:context cmd)])
 
 (defn translate-not
   "Translates the 'not' vm command to hack assembly.
   0x0000 is false and 0xffff is true."
   [cmd]
-  (join-lines [(point-a-to-stack-top)
-                "M=!M"]))
+  [(join-lines [(point-a-to-stack-top)
+                "M=!M"])
+   (:context cmd)])
 
 (defn- translate-comp
   "Translate a comparison vm command to hack assembly.
   The jump statement is the difference between the different
   comparison commands.
   0x0000 is false and 0xffff is true."
-  [{{ic :instruction-number} :context} jump]
-  (join-lines [(pop-to-d-dec-a)
+  [{{ic :instruction-number :as context} :context} jump]
+  [(join-lines [(pop-to-d-dec-a)
                 "D=M-D"
                 (at (+ ic 10))
                 (str "D;" jump)
@@ -285,7 +291,8 @@
                 (point-a-to-stack-top)
                 "A=A-1"
                 "M=D"
-                (dec-sp)]))
+                (dec-sp)])
+   context])
 
 
 (defn translate-eq
@@ -309,7 +316,7 @@
 
 (defn translate-push-constant
   "Translates the 'push constant' command to assembly"
-  [{:keys [index] :as cmd}]
+  [{:keys [index context]}]
   (join-lines [(at index)
                 "D=A"
                 (push-from-d)
@@ -317,18 +324,18 @@
 
 (defn translate-push-temp
   "Translates the 'push temp' command to assembly"
-  [{:keys [index] :as cmd}]
+  [{:keys [index context]}]
   (join-lines [(at (+ TEMP-BASE index))
                 "D=M"
                 (push-d-inc-sp)]))
 
 (defn translate-pop-temp
   "Translates the 'pop temp' command to assembly"
-  [{:keys [index] :as command}]
+  [{:keys [index context]}]
   (join-lines [(pop-to-d)
-                (at (+ TEMP-BASE index))
-                "M=D"
-                (dec-sp)]))
+               (at (+ TEMP-BASE index))
+               "M=D"
+               (dec-sp)]))
 
 (defn- translate-push-pointer-base
   "Translate 'push pointer' based on the specified base pointer.
@@ -348,19 +355,19 @@
 
 (defn translate-push-pointer
   "Translate the 'push pointer' command"
-  [{:keys [index]}]
+  [{:keys [index context]}]
   (let [base (get pointer-segment-index-map index)]
     (translate-push-pointer-base base)))
 
 
 (defn translate-pop-pointer
   "Translates 'pop pointer' command to assembly"
-  [{:keys [index]}]
+  [{:keys [index context]}]
   (let [base (get pointer-segment-index-map index)]
     (translate-pop-pointer-base base)))
 
 (defn translate-push-static
-  [{index :index {class :class} :context}]
+  [{index :index {class :class :as context} :context}]
   (join-lines [(at (str class "." index))
                 "D=M"
                 (push-d-inc-sp)]))
@@ -368,29 +375,29 @@
 (defn translate-pop-static
   [{index :index {class :class} :context}]
   (join-lines [(pop-d-dec-sp)
-                (at (str class "." index))
-                "M=D"]))
+               (at (str class "." index))
+               "M=D"]))
 
 (defn- translate-generic-push
   "Translates the 'push' command for local, arg, this, that segments"
   [base index]
   (join-lines [(store-segment-val-in-d base index)
-                (push-from-d)
-                (inc-sp)]))
+               (push-from-d)
+               (inc-sp)]))
 
 (defn- translate-generic-pop
   "Translates the 'pop' command for local, arg, this, that segments."
   [base index]
   (join-lines [(store-segment-addr-in-d base index)
-                (store-d-in-r13)
-                (pop-to-d)
-                (store-d-in-r13-addr)
-                (dec-sp)]))
+               (store-d-in-r13)
+               (pop-to-d)
+               (store-d-in-r13-addr)
+               (dec-sp)]))
 
 (defn translate-push
   "Translates the 'push' command"
-  [{:keys [segment index] :as cmd}]
-  (case segment
+  [{:keys [segment index context] :as cmd}]
+  [(case segment
     "constant" (translate-push-constant cmd)
     "local" (translate-generic-push "LCL" index)
     "argument" (translate-generic-push "ARG" index)
@@ -398,67 +405,81 @@
     "that" (translate-generic-push "THAT" index)
     "temp" (translate-push-temp cmd)
     "pointer" (translate-push-pointer cmd)
-    "static" (translate-push-static cmd)))
+    "static" (translate-push-static cmd))
+   context])
 
 (defn translate-pop
   "Translates 'pop' command to hack assembly."
-  [{:keys [segment index] :as cmd}]
-  (case segment
+  [{:keys [segment index context] :as cmd}]
+  [(case segment
     "local" (translate-generic-pop "LCL" index)
     "argument" (translate-generic-pop "ARG" index)
     "this" (translate-generic-pop "THIS" index)
     "that" (translate-generic-pop "THAT" index)
     "temp" (translate-pop-temp cmd)
     "pointer" (translate-pop-pointer cmd)
-    "static" (translate-pop-static cmd)))
+    "static" (translate-pop-static cmd))
+   context])
 
 (defn translate-label
   "Translates 'label' command to hack assembly."
   [{:keys [label context] :as cmd}]
-  (let [label (prefix-label label context)]
-    (str "(" label ")")))
+  [(let [label (prefix-label label context)]
+    (str "(" label ")"))
+   context])
 
 (defn translate-goto
   "Translates 'goto' vm command to assembly."
   [{:keys [label context] :as cmd}]
-  (let [label (prefix-label label context)]
+  [(let [label (prefix-label label context)]
     (join-lines [(at label)
-                  "0;JMP"])))
+                  "0;JMP"]))
+   context])
 
 (defn translate-if-goto
   "Translates 'if-goto' vm command to assembly."
   [{:keys [label context] :as cmd}]
-  (let [label (prefix-label label context)]
+  [(let [label (prefix-label label context)]
     (join-lines [(pop-d-dec-sp)
                  (at label)
-                 "D;JNE"])))
+                 "D;JNE"]))
+   context])
 
 (defn translate-function
   "Translates 'function' command to assembly."
-  [{:keys [function vars] :as cmd}]
-  (if (> vars 0)
+  [{:keys [function vars context] :as cmd}]
+  [(if (> vars 0)
     (join-lines [(label function)
                  (push-zeros vars)])
-    (label function)))
+    (label function))
+  context])
 
 (defn translate-return
   "Translates 'return' command to assembly."
   [cmd]
-  (join-lines [(copy-frame-and-return-addr)
+  [(join-lines [(copy-frame-and-return-addr)
                (reposition-return-value)
                (restore-caller-sp)
                (restore-caller-segments)
-               (return-to-caller)]))
+               (return-to-caller)])
+   (:context cmd)])
 
 (defn translate-call
   "Translates 'call' vm command to hack assembly."
-  [{func :function args :args {ic :instruction-number} :context}]
-  (let [return-addr (+ ic 43) ; this command generates 43 asm instructions
+  [{func :function args :args
+    {ic :instruction-number :as context} :context}]
+  [(let [return-addr (+ ic 43) ; this command generates 43 asm instructions
         arg-offset (+ args FRAME-SIZE)]
     (join-lines [(save-caller-frame return-addr)
                  (reposition-callee-arg arg-offset)
                  (at func)
-                 "0;JMP"])))
+                 "0;JMP"]))
+   context])
+
+(defn translate-empty
+  "Translates an empty command"
+  [{:keys [context]}]
+  [nil context])
 
 (defn find-translator
   "Finds the appropriate function to translate the given command"
@@ -481,7 +502,7 @@
     "function" translate-function
     "return" translate-return
     "call" translate-call
-    nil nil
+    nil translate-empty
     (throw (Exception.
              (str "Cannot translate invalid command " command)))))
 
@@ -489,14 +510,14 @@
   "Translates the specific cmd to hack assembly. Returns nil if
   it's not a valid command"
   [cmd]
-  (if-let [f (find-translator cmd)]
-    (f cmd)
-    nil))
+  (let [f (find-translator cmd)]
+    (f cmd)))
 
 (defn translate-with-comment
   "Translates cmd into hack assembly and adds a comment on top
   of the resulting code. Return nil if command is not valid."
   [{:keys [source] :as cmd}]
-  (if-let [out (translate cmd)]
-    (str "// " source "\n" out)
-    nil))
+  (let [[out context] (translate cmd)]
+    (if out
+      [(str "// " source "\n" out) context]
+      [nil context])))
