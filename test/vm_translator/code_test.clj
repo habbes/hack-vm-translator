@@ -513,6 +513,22 @@
           [code ctx] (translate cmd)]
       (is (= code nil))))
 
+  (testing "updates instruction-number in context"
+    (let [cmd {:source "add"
+               :command "add"
+               :context {:instruction-number 10}}
+          [code {ic :instruction-number}] (translate cmd)]
+      (is (= ic (-> code
+                    s/split-lines
+                    count
+                    (+ 10)))))
+    (testing "except for empty commands"
+      (let [cmd {:source nil
+                 :command nil
+                 :context {:instruction-number 4}}
+            [code {ic :instruction-number}] (translate cmd)]
+        (is (= ic 4)))))
+
   (testing "throws exception on invalid command"
     (doseq [cmd [{:command "invalid"}]]
       (is (thrown-with-msg? Exception

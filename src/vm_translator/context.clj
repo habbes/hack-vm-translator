@@ -18,7 +18,7 @@
    (inc-instruction ctx 1))
   ([ctx count]
    (update ctx
-           :instruction-number (partial + count))))
+           :instruction-number + count)))
 
 (defn set-class
   "Sets the current class for the context"

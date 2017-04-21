@@ -508,12 +508,24 @@
     (throw (Exception.
              (str "Cannot translate invalid command " command)))))
 
+(defn- update-inst-num
+  "Increments instruction number based on translated code"
+  [code context]
+  (if code
+    (->> code
+         s/split-lines
+         count
+         (ctx/inc-instruction context))
+    context))
+
 (defn translate
   "Translates the specific cmd to hack assembly. Returns nil if
   it's not a valid command"
   [cmd]
-  (let [f (find-translator cmd)]
-    (f cmd)))
+  (let [f (find-translator cmd)
+        [out context] (f cmd)
+        context (update-inst-num out context)]
+    [out context]))
 
 (defn translate-with-comment
   "Translates cmd into hack assembly and adds a comment on top
