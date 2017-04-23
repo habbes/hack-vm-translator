@@ -46,20 +46,28 @@
         ctx (context/initialize class-name)]
     (translate-lines lines handler ctx)))
 
+(defn- remove-ext
+  "Removes file extension from path"
+  [path]
+  (s/replace path
+             #"(\.\w+)$"
+             ""))
+
 (defn get-output-path
-  "Get the output path for the output file based on
+  "Gets the output path for the output file based on
   the input vm file."
   [input-path]
-  (s/replace input-path
-             #"([a-zA-Z0-9_\- ]+)\.vm$"
-             "$1.asm"))
+  (-> input-path
+      (io/as-file)
+      (.getPath)
+      remove-ext
+      (str ".asm")))
 
 (defn get-class-name
   "Gets the class name based on the input vm file"
   [input-path]
-  (nth
-    (re-find #"([a-zA-Z0-9_\-]+)\.vm$" input-path)
-    1))
+  (-> (.getName (io/file input-path))
+      (remove-ext)))
 
 (defn translate-file
   "Translate the input vm file and store the asm output in

@@ -106,7 +106,17 @@ M=M-1
       (is (= out "../path/to/file.asm")))
     (let [input "./path/to/file.vm"
           out (get-output-path input)]
-      (is (= out "./path/to/file.asm")))))
+      (is (= out "./path/to/file.asm"))))
+  (testing "Should support directories"
+    (let [input "path/to/MyProject"
+          out (get-output-path input)]
+      (is (= out "path/to/MyProject.asm")))
+    (let [input "/path/to/Project"
+          out (get-output-path input)]
+      (is (= out "/path/to/Project.asm")))
+    (let [input "path/to/App/"
+          out (get-output-path input)]
+      (is (= out "path/to/App.asm")))))
 
 (deftest get-class-name-test
   (testing "Get filename without extension"
