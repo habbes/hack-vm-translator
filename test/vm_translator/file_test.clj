@@ -1,6 +1,43 @@
 (ns vm-translator.file-test
   (:require [clojure.test :refer :all]
-            [vm-translator.file :refer :all]))
+            [vm-translator.file :refer :all]
+            [clojure.java.io :as io]))
+
+(deftest vm-file-test
+  (testing "Accepts path with .vm extension"
+    (let [path "Sample.vm"]
+      (is (= (vm-file? path) true)))
+    (let [path "this/is/a/File.vm"]
+      (is (= (vm-file? path) true)))
+    (let [path "../path/to/Class.vm"]
+      (is (= (vm-file? path) true)))
+    (let [path "./my/Math.vm"]
+      (is (= (vm-file? path) true)))
+    (let [path "/path/to/test.vm"]
+      (is (= (vm-file? path)))))
+  (testing "Rejects path without .vm extension"
+    (is (= false (vm-file? "Sample.test")))
+    (is (= false (vm-file? "/some/path")))
+    (is (= false (vm-file? "../test/File.cmp")))
+    (is (= false (vm-file? "/code/project/Project/README.md")))))
+
+(deftest get-vm-files-test
+  (testing "Returns set of vm files paths in directory"
+    (let [paths (get-vm-files "test/test_files/NestedCall")]
+      (is (= paths #{"test/test_files/NestedCall/Sys.vm"})))
+    (let [paths (get-vm-files "test/test_files/FibonacciElement")]
+      (is (= paths #{"test/test_files/FibonacciElement/Main.vm"
+                     "test/test_files/FibonacciElement/Sys.vm"})))))
+
+(deftest dir?-test
+  (testing "Accepts directories"
+    (is (= true (dir? "test/test_files/empty_dir")))
+    (is (= true (dir? "test/test_files/NestedCall")))
+    (is (= true (dir? "test/test_files/FibonacciElement"))))
+  (testing "Rejects files"
+    (is (= false (dir? "test/test_files/empty_file")))
+    (is (= false (dir? "test/test_files/SimpleAdd.vm")))
+    (is (= false (dir? "test/test_files/SimpleAdd.asm")))))
 
 (deftest get-output-path-test
   (testing "Replace filename extension with .asm"

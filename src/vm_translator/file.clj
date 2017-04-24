@@ -3,29 +3,31 @@
             [clojure.string :as s]))
 
 
-(defn remove-ext
+(defn- remove-ext
   "Removes file extension from path"
   [path]
   (s/replace path
              #"(\.\w+)$"
              ""))
 
-(defn dir?
-  "Checks whether the specified path is a directory"
-  [path]
-  (.isDir (io/file path)))
-
 (defn vm-file?
   "Checks whether the specified file is a .vm file"
   [path]
   (s/ends-with? path ".vm"))
 
-(defn get-vm-files
-  "Get a list of vm files in the specified directory"
+(defn dir?
+  "Checks whether the specified path is a directory"
   [path]
-  (let [dir (io/as-file path)
-        files (.listFiles dir)]
-    (filter (vm-file? files))))
+  (.isDirectory (io/file path)))
+
+(defn get-vm-files
+  "Returns a set of vm files in the specified directory"
+  [path]
+  (let [dir (io/as-file path) files (.listFiles dir)]
+    (->> files
+         (map #(.getPath %))
+         (filter vm-file?)
+         (into #{}))))
 
 (defn get-output-path
   "Gets the output path for the output file based on
