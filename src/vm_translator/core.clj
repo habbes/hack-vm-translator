@@ -2,6 +2,7 @@
   (:require [vm-translator.parser :as parser]
             [vm-translator.code :as code]
             [vm-translator.context :as context]
+            [vm-translator.file :as file]
             [clojure.string :as s]
             [clojure.java.io :as io])
   (:gen-class))
@@ -52,7 +53,7 @@
   "Translate the input vm file and store the asm output in
   the specified output file"
   [input-path output-path]
-  (let [cls (get-class-name input-path)
+  (let [cls (file/get-class-name input-path)
         ctx (context/initialize cls)]
     (with-open [rdr (io/reader input-path)]
       (with-open [wrtr (io/writer output-path)]
@@ -63,7 +64,7 @@
   "Translates the input file and write the output
   in the specified writer"
   [input-path wrtr ctx]
-  (let [cls (get-class-name input-path)
+  (let [cls (file/get-class-name input-path)
         ctx (context/set-class ctx cls)]
     (with-open [rdr (io/reader input-path)]
       (translate-source rdr wrtr ctx))))
@@ -89,14 +90,14 @@
   "Translate a dir's vm files in to the specified asm
   output file"
   [dir output-file]
-  (let [input-files (get-vm-files dir)]
+  (let [input-files (file/get-vm-files dir)]
     (translate-files input-files output-file)))
 
 (defn find-translator
   "Returns the suitable translator fn for the given
   input path depending on whether it refers to a file or dir"
   [path]
-  (if (.isDir (io/as-file path))
+  (if (file/dir? path)
     translate-dir
     translate-file))
 

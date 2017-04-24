@@ -1,6 +1,6 @@
 (ns vm-translator.file
   (:require [clojure.java.io :as io]
-            [clojure.java.string :as s]))
+            [clojure.string :as s]))
 
 
 (defn remove-ext
@@ -18,12 +18,12 @@
 (defn vm-file?
   "Checks whether the specified file is a .vm file"
   [path]
-  (s/ends-with path ".vm"))
+  (s/ends-with? path ".vm"))
 
 (defn get-vm-files
   "Get a list of vm files in the specified directory"
-  [dir-path]
-  (let [dir (io/as-file dir)
+  [path]
+  (let [dir (io/as-file path)
         files (.listFiles dir)]
     (filter (vm-file? files))))
 
