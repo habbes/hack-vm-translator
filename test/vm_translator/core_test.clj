@@ -160,23 +160,26 @@ M=M-1
 (deftest translate-source-test
   (testing "Translates vm source from reader and writer asm output to writer"
     (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source))
-          wrtr (java.io.StringWriter.)
+          output (atom "")
+          handler (make-sample-output-handler output)
           ctx {:line-number 0
                :instruction-number -1
-               :class "SampleClass"}]
-      (translate-source rdr wrtr ctx)
-      (is (= (.toString wrtr) sample-output))))
+               :class "SampleClass"}
+          out-ctx (translate-source rdr handler ctx)]
+      (is (= @output sample-output))))
 
   (testing "Translates vm source code containing comparison commands"
     (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source-eq))
           wrtr (java.io.StringWriter.)
+          output (atom "")
+          handler (make-sample-output-handler output)
           ctx {:line-number 0
                :instruction-number -1
-               :class "SampleClass"}]
-      (translate-source rdr wrtr ctx)
-      (is (= (.toString wrtr) sample-output-eq)))))
+               :class "SampleClass"}
+          out-ctx (translate-source rdr handler ctx)]
+      (is (= @output sample-output-eq)))))
 
-(deftest translator
+(deftest find-translator-test
   (testing "Returns translate-file if path is a file"
     (let [f (find-translator "test/test_files/SimpleAdd.vm")]
       (is (= f translate-file))))

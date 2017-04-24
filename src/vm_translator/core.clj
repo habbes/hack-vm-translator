@@ -43,57 +43,53 @@
    (.write wrtr
            (str out "\n"))))
 
+(defn inject-bootstrap
+  "Injects bootstrapping code to init the asm program to
+  the specified output handler"
+  [handler ctx]
+  (let [cmd {:source "init" :command "init"
+             :context ctx}
+        [code new-ctx] (code/translate cmd)]
+    (handler code)
+    new-ctx))
+
 (defn translate-source
   "Reads vm source code from rdr and writes the output
   assembly code into wrtr"
-  [rdr wrtr ctx]
-  (let [lines (line-seq rdr)
-        handler (make-writer-output-handler wrtr)]
+  [rdr handler ctx]
+  (let [lines (line-seq rdr)]
     (translate-lines lines handler ctx)))
 
 (defn translate-file
-  "Translate the input vm file and store the asm output in
-  the specified output file"
-  [input-path output-path]
-  (let [cls (file/get-class-name input-path)
-        ctx (context/initialize cls)]
-    (with-open [rdr (io/reader input-path)
-                wrtr (io/writer output-path)]
-        (translate-source rdr wrtr ctx))))
-
-
-(defn translate-file-to-writer
-  "Translates the input file and write the output
-  in the specified writer"
-  [input-path wrtr ctx]
+  "Translates the input vm file and store and feed the
+  asm code to the output handler"
+  [input-path handler ctx]
   (let [cls (file/get-class-name input-path)
         ctx (context/set-class ctx cls)]
     (with-open [rdr (io/reader input-path)]
-      (translate-source rdr wrtr ctx))))
+        (translate-source rdr handler ctx))))
 
 (defn make-files-reducer
   "Returns a reducer fn that given a ctx and input path
   will translate the input into the specified wrtr and return
   the updated ctx"
-  [wrtr]
+  [handler]
   (fn [ctx path]
-    (translate-file-to-writer path wrtr ctx)))
+    (translate-file path handler ctx)))
 
 (defn translate-files
   "Translates a vector of input vm files into the specified
   asm output file"
-  [input-paths output-path]
-  (let [ctx (context/initialize)]
-    (with-open [wrtr (io/writer output-path)]
-      (reduce (make-files-reducer wrtr)
-              ctx input-paths))))
+  [input-paths handler ctx]
+  (reduce (make-files-reducer handler)
+          ctx input-paths))
 
 (defn translate-dir
-  "Translate a dir's vm files in to the specified asm
-  output file"
-  [dir output-file]
+  "Translates a dir's vm files in to the specified asm
+  output handler"
+  [dir handler ctx]
   (let [input-files (file/get-vm-files dir)]
-    (translate-files input-files output-file)))
+    (translate-files input-files handler ctx)))
 
 (defn find-translator
   "Returns the suitable translator fn for the given
@@ -103,12 +99,23 @@
     translate-dir
     translate-file))
 
+(defn translate
+  "Translate the vm source at the input path and feed the
+  output to the specified handler. If :boot is true,
+  bootstrapping code is injected at the top of the output."
+  [input-path handler & {boot :boot :or [boot false]}]
+    (let [f (find-translator input-path)
+          ctx (context/initialize)
+          init-ctx (if boot (inject-bootstrap ctx) ctx)]
+      (f input-path handler init-ctx)))
+
 (defn -main
   "Translates a hack vm source file or directory into a
   hack asm output file"
   [input-path]
-  (let [output-path (file/get-output-path input-path)
-        translate (find-translator input-path)]
+  (let [output-path (file/get-output-path input-path)]
     (println "Translating into" output-path)
-    (translate input-path output-path)
+    (with-open [wrtr (io/writer output-path)]
+      (let [handler (make-writer-output-handler wrtr)]
+        (translate input-path handler :boot true)))
     (println "Operation complete")))
