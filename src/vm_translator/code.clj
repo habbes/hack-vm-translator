@@ -486,7 +486,7 @@
                 (restore-caller-sp)
                 (restore-caller-segments)
                 (return-to-caller)])
-   (ctx/unset-function context)])
+   context])
 
 (defn translate-call
   "Translates 'call' vm command to hack assembly."
