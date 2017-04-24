@@ -8,7 +8,6 @@
   (:gen-class))
 
 
-
 (defn translate-line
   "Translates line of vm source code to hack assembly code.
   Returns nil if source code is invalid."
@@ -20,19 +19,23 @@
             code/translate-with-comment)]
     [out (context/inc-line ctx)]))
 
+(defn make-line-reducer
+  "Returns a fn which when supplied a ctx and line will translate the line,
+  feed it to the specified handler and return the updated ctx"
+  [handler ctx]
+  (fn [ctx line]
+    (let [[out new-ctx] (translate-line line ctx)]
+      (if out (handler out))
+      new-ctx)))
+
 (defn translate-lines
   "Translates each line in the lines seq and pass each output
   to the output handler fn"
   [lines output-handler ctx]
-  (loop [n 0 ctx ctx]
-    (if-let [line (nth lines n nil)]
-      (let [[out new-ctx] (translate-line line ctx)]
-        (recur (inc n)
-               (do (if out (output-handler out))
-                 new-ctx)))
-    ctx)))
+  (let [reducer (make-line-reducer output-handler ctx)]
+    (reduce reducer ctx lines)))
 
-(defn create-writer-output-handler
+(defn make-writer-output-handler
   "Returns an output-handler which writes ouput
   to the specified wrtr"
   [wrtr]
@@ -45,7 +48,7 @@
   assembly code into wrtr"
   [rdr wrtr ctx]
   (let [lines (line-seq rdr)
-        handler (create-writer-output-handler wrtr)]
+        handler (make-writer-output-handler wrtr)]
     (translate-lines lines handler ctx)))
 
 (defn translate-file
@@ -68,7 +71,7 @@
     (with-open [rdr (io/reader input-path)]
       (translate-source rdr wrtr ctx))))
 
-(defn create-files-reducer
+(defn make-files-reducer
   "Returns a reducer fn that given a ctx and input path
   will translate the input into the specified wrtr and return
   the updated ctx"
@@ -82,7 +85,7 @@
   [input-paths output-path]
   (let [ctx (context/initialize)]
     (with-open [wrtr (io/writer output-path)]
-      (reduce (create-files-reducer wrtr)
+      (reduce (make-files-reducer wrtr)
               ctx input-paths))))
 
 (defn translate-dir

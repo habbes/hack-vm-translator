@@ -112,7 +112,7 @@ M=M-1
                                 #"Cannot parse"
                                 (translate-line line ctx))))))
 
-(defn create-sample-output-handler
+(defn make-sample-output-handler
   "Creates an output handler fn that appends the output
   to the specified out-atom"
   [out-atom]
@@ -123,7 +123,7 @@ M=M-1
   (testing "Translate seq of source lines into asm output string"
     (let [lines (s/split-lines sample-source)
           output (atom "")
-          handler (create-sample-output-handler output)
+          handler (make-sample-output-handler output)
           ctx {:line-number 1 :instruction-number 0}
           final-ctx (translate-lines lines handler ctx)]
       (is (= @output sample-output))
@@ -133,7 +133,7 @@ M=M-1
   (testing "Translate lines including comments"
     (let [lines (s/split-lines sample-source-with-comments)
           output (atom "")
-          handler (create-sample-output-handler output)
+          handler (make-sample-output-handler output)
           ctx {:line-number 0 :instruction-number -1}
           final-ctx (translate-lines lines handler ctx)]
       (is (= @output sample-output))
@@ -143,15 +143,15 @@ M=M-1
   (testing "Translate lines including comparison commands"
     (let [lines (s/split-lines sample-source-eq)
           output (atom "")
-          handler (create-sample-output-handler output)
+          handler (make-sample-output-handler output)
           ctx {:line-number 0 :instruction-number -1}
           final-ctx (translate-lines lines handler ctx)]
       (is (= @output sample-output-eq)))))
 
-(deftest create-writer-output-handler-test
+(deftest make-writer-output-handler-test
   (testing "Creates a handler that writers output to an io writer"
     (let [wrtr (java.io.StringWriter.)
-          handler (create-writer-output-handler wrtr)]
+          handler (make-writer-output-handler wrtr)]
       (handler "@SP\nA=M\nD=M")
       (handler "D=D+1")
       (is (= (.toString wrtr)
