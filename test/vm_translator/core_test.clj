@@ -175,3 +175,13 @@ M=M-1
                :class "SampleClass"}]
       (translate-source rdr wrtr ctx)
       (is (= (.toString wrtr) sample-output-eq)))))
+
+(deftest translator
+  (testing "Returns translate-file if path is a file"
+    (let [f (find-translator "test/test_files/SimpleAdd.vm")]
+      (is (= f translate-file))))
+  (testing "Returns translate-dir if path is a directory"
+    (let [f (find-translator "test/test_files/NestedCall")]
+      (is (= f translate-dir)))
+    (let [f (find-translator "test/test_files/FibonacciElement")]
+      (is (= f translate-dir)))))

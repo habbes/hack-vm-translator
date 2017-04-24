@@ -54,9 +54,9 @@
   [input-path output-path]
   (let [cls (file/get-class-name input-path)
         ctx (context/initialize cls)]
-    (with-open [rdr (io/reader input-path)]
-      (with-open [wrtr (io/writer output-path)]
-        (translate-source rdr wrtr ctx)))))
+    (with-open [rdr (io/reader input-path)
+                wrtr (io/writer output-path)]
+        (translate-source rdr wrtr ctx))))
 
 
 (defn translate-file-to-writer
