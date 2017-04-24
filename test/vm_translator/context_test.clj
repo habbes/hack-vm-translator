@@ -3,6 +3,10 @@
             [vm-translator.context :refer :all]))
 
 (deftest initialize-test
+  (testing "Initializes new context without class name"
+    (let [ctx (initialize)]
+      (is (= ctx {:line-number 0
+                  :instruction-number -1}))))
   (testing "Initializes new context map with given class name"
     (let [ctx (initialize "MyClass")]
       (is (= ctx {:line-number 0

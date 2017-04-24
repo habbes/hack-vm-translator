@@ -2,10 +2,12 @@
 
 (defn initialize
   "Initializes new context"
-  [class-name]
-  {:line-number 0
-   :instruction-number -1
-   :class class-name})
+  ([]
+   {:line-number 0
+    :instruction-number -1})
+  ([class-name]
+   (assoc (initialize)
+     :class class-name)))
 
 (defn inc-line
   "Increments the line number"
