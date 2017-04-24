@@ -471,7 +471,7 @@
           [code ctx] (translate cmd)]
       (is (= code (s/join "\n" [;; save caller's frame onto stack
                                 ;push return address
-                                "@51" ;4 + 47 instructions in this block
+                                "@52" ;4 + 47 instructions in this block + 1 (the next instruction)
                                 "D=A"
                                 "@SP"
                                 "A=M"
