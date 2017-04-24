@@ -529,7 +529,7 @@
   [code]
   (->> code
        s/split-lines
-       (filter (comp not label?))
+       (filter (complement label?))
        count))
 
 (defn- update-inst-num
@@ -542,8 +542,8 @@
     context))
 
 (defn translate
-  "Translates the specific cmd to hack assembly. Returns nil if
-  it's not a valid command"
+  "Translates the specific cmd to hack assembly. Returns the output
+  and updated context. Throws exception if command is invalid."
   [cmd]
   (let [f (find-translator cmd)
         [out context] (f cmd)
@@ -552,7 +552,8 @@
 
 (defn translate-with-comment
   "Translates cmd into hack assembly and adds a comment on top
-  of the resulting code. Return nil if command is not valid."
+  of the resulting code. Returns the output and updated context.
+  Throws exception if command is invalid"
   [{:keys [source] :as cmd}]
   (let [[out context] (translate cmd)]
     (if out
