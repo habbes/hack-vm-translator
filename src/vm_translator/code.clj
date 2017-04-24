@@ -237,6 +237,14 @@
                "@LCL"
                "M=D"]))
 
+(defn- init-sp
+  "Generates code to initialize SP to 256"
+  []
+  (join-lines ["@256"
+               "D=A"
+               "@SP"
+               "M=D"]))
+
 ;; translators for the different commands
 
 (defn translate-add
@@ -493,6 +501,14 @@
                  "0;JMP"]))
    context])
 
+(defn translate-init
+  "Translates 'init' vm command to hack assembly."
+  [{:keys [context]}]
+  [(join-lines [(init-sp)
+                "@Sys.init"
+                "0;JMP"])
+   context])
+
 (defn translate-empty
   "Translates an empty command"
   [{:keys [context]}]
@@ -519,6 +535,7 @@
     "function" translate-function
     "return" translate-return
     "call" translate-call
+    "init" translate-init
     nil translate-empty
     (throw (Exception.
              (str "Cannot translate invalid command " command)))))

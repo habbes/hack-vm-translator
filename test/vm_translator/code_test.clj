@@ -526,6 +526,17 @@
                                 "@SomeClass.test"
                                 "0;JMP"])))))
 
+  (testing "init command"
+    (let [cmd {:source "init"
+               :command "init"}
+          [code ctx] (translate cmd)]
+      (is (= code (s/join "\n" ["@256"
+                                "D=A"
+                                "@SP"
+                                "M=D"
+                                "@Sys.init"
+                                "0;JMP"])))))
+
   (testing "empty command"
     (let [cmd {:source nil
                :command nil}
