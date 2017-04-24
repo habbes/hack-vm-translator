@@ -3,6 +3,20 @@
             [vm-translator.code :refer :all]
             [clojure.string :as s]))
 
+(deftest count-instructions-test
+  (testing "Returns number of instructions"
+    (let [code (s/join "\n" ["@SP"
+                             "M=M-1"
+                             "A=M"
+                             "M=D+M"])]
+      (is (= (count-instructions code) 4))))
+  (testing "Ignores label declarations"
+    (let [code (s/join "\n" ["(LABEL)"
+                             "D=M-D"
+                             "@LABEL"
+                             "D;JEQ"])]
+      (is (= (count-instructions code) 3)))))
+
 (deftest translate-test
   (testing "add command"
     (let [cmd {:source "add" :command "add"}

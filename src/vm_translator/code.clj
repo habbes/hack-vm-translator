@@ -109,6 +109,12 @@
   [l]
   (str "(" l ")"))
 
+(defn- label?
+  "Checks whether the given instruction is a
+  label declaration."
+  [inst]
+  (s/starts-with? inst "("))
+
 (defn- store-segment-val-in-d
   "Generates asm code that stores M[base + index] in D."
   [base index]
@@ -517,13 +523,21 @@
     (throw (Exception.
              (str "Cannot translate invalid command " command)))))
 
+(defn count-instructions
+  "Counts the number executable asm instructions
+  in the given code excerpt. Labels are not considered."
+  [code]
+  (->> code
+       s/split-lines
+       (filter (comp not label?))
+       count))
+
 (defn- update-inst-num
   "Increments instruction number based on translated code"
   [code context]
   (if code
     (->> code
-         s/split-lines
-         count
+         count-instructions
          (ctx/inc-instruction context))
     context))
 
