@@ -43,10 +43,9 @@
 (defn translate-source
   "Reads vm source code from rdr and writes the output
   assembly code into wrtr"
-  [rdr wrtr class-name]
+  [rdr wrtr ctx]
   (let [lines (line-seq rdr)
-        handler (create-writer-output-handler wrtr)
-        ctx (context/initialize class-name)]
+        handler (create-writer-output-handler wrtr)]
     (translate-lines lines handler ctx)))
 
 (defn translate-file
@@ -57,7 +56,7 @@
         ctx (context/initialize cls)]
     (with-open [rdr (io/reader input-path)]
       (with-open [wrtr (io/writer output-path)]
-        (translate-source rdr wrtr class-name)))))
+        (translate-source rdr wrtr ctx)))))
 
 
 (defn translate-file-to-writer
@@ -105,7 +104,7 @@
   "Translates a hack vm source file or directory into a
   hack asm output file"
   [input-path]
-  (let [output-path (get-output-path input-path)
+  (let [output-path (file/get-output-path input-path)
         translate (find-translator input-path)]
     (println "Translating into" output-path)
     (translate input-path output-path)

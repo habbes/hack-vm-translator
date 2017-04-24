@@ -160,12 +160,18 @@ M=M-1
 (deftest translate-source-test
   (testing "Translates vm source from reader and writer asm output to writer"
     (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source))
-          wrtr (java.io.StringWriter.)]
-      (translate-source rdr wrtr "SampleClass")
+          wrtr (java.io.StringWriter.)
+          ctx {:line-number 0
+               :instruction-number -1
+               :class "SampleClass"}]
+      (translate-source rdr wrtr ctx)
       (is (= (.toString wrtr) sample-output))))
 
   (testing "Translates vm source code containing comparison commands"
     (let [rdr (clojure.java.io/reader (java.io.StringReader. sample-source-eq))
-          wrtr (java.io.StringWriter.)]
-      (translate-source rdr wrtr "SampleClass")
+          wrtr (java.io.StringWriter.)
+          ctx {:line-number 0
+               :instruction-number -1
+               :class "SampleClass"}]
+      (translate-source rdr wrtr ctx)
       (is (= (.toString wrtr) sample-output-eq)))))
