@@ -492,7 +492,7 @@
   "Translates 'call' vm command to hack assembly."
   [{func :function args :args
     {ic :instruction-number :as context} :context}]
-  [(let [return-addr (+ ic 48) ; this command generates 43 asm instructions
+  [(let [return-addr (+ ic 48) ; this command generates 47 asm instructions
         arg-offset (+ args FRAME-SIZE)]
     (join-lines [(save-caller-frame return-addr)
                  (reposition-callee-arg arg-offset)
@@ -503,11 +503,16 @@
 
 (defn translate-init
   "Translates 'init' vm command to hack assembly."
-  [{:keys [context]}]
-  [(join-lines [(init-sp)
-                "@Sys.init"
-                "0;JMP"])
-   context])
+  [{{ic :instruction-number :as context} :context}]
+  (let [return-addr (+ ic 52) ;4 insts for init-sp + 47 for call + 1
+        arg-offset FRAME-SIZE]
+    [(join-lines [(init-sp)
+                 (save-caller-frame return-addr)
+                 (reposition-callee-arg arg-offset)
+                 (reposition-callee-lcl)
+                 "@Sys.init"
+                 "0;JMP"])
+     context]))
 
 (defn translate-empty
   "Translates an empty command"

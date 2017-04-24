@@ -43,16 +43,6 @@
    (.write wrtr
            (str out "\n"))))
 
-(defn inject-bootstrap
-  "Injects bootstrapping code to init the asm program to
-  the specified output handler"
-  [handler ctx]
-  (let [cmd {:source "init" :command "init"
-             :context ctx}
-        [code new-ctx] (code/translate cmd)]
-    (handler code)
-    new-ctx))
-
 (defn translate-source
   "Reads vm source code from rdr and writes the output
   assembly code into wrtr"
@@ -99,6 +89,16 @@
     translate-dir
     translate-file))
 
+(defn inject-bootstrap
+  "Injects bootstrapping code to init the asm program to
+  the specified output handler"
+  [handler ctx]
+  (let [cmd {:source "init" :command "init"
+             :context ctx}
+        [code new-ctx] (code/translate cmd)]
+    (handler code)
+    new-ctx))
+
 (defn translate
   "Translate the vm source at the input path and feed the
   output to the specified handler. If :boot is true,
@@ -106,7 +106,8 @@
   [input-path handler & {boot :boot :or [boot false]}]
     (let [f (find-translator input-path)
           ctx (context/initialize)
-          init-ctx (if boot (inject-bootstrap ctx) ctx)]
+          init-ctx (if boot
+                     (inject-bootstrap handler ctx) ctx)]
       (f input-path handler init-ctx)))
 
 (defn -main
