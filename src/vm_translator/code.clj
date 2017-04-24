@@ -507,11 +507,11 @@
   (let [return-addr (+ ic 52) ;4 insts for init-sp + 47 for call + 1
         arg-offset FRAME-SIZE]
     [(join-lines [(init-sp)
-                 (save-caller-frame return-addr)
-                 (reposition-callee-arg arg-offset)
-                 (reposition-callee-lcl)
-                 "@Sys.init"
-                 "0;JMP"])
+                  (save-caller-frame return-addr)
+                  (reposition-callee-arg arg-offset)
+                  (reposition-callee-lcl)
+                  "@Sys.init"
+                  "0;JMP"])
      context]))
 
 (defn translate-empty
