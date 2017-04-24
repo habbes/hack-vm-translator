@@ -457,7 +457,7 @@
           [code ctx] (translate cmd)]
       (is (= code (s/join "\n" [;; save caller's frame onto stack
                                 ;push return address
-                                "@47" ;4 + 43 instructions in this block
+                                "@51" ;4 + 47 instructions in this block
                                 "D=A"
                                 "@SP"
                                 "A=M"
@@ -502,6 +502,11 @@
                                 "@SP"
                                 "D=M-D"
                                 "@ARG"
+                                "M=D"
+                                ;; reposition callee's LCL
+                                "@SP"
+                                "D=M"
+                                "@LCL"
                                 "M=D"
                                 ;; goto function
                                 "@SomeClass.test"

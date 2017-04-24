@@ -223,6 +223,14 @@
                "@ARG"
                "M=D"]))
 
+(defn- reposition-callee-lcl
+  "Repositions the LCL pointer for the caller."
+  []
+  (join-lines ["@SP"
+               "D=M"
+               "@LCL"
+               "M=D"]))
+
 ;; translators for the different commands
 
 (defn translate-add
@@ -470,10 +478,11 @@
   "Translates 'call' vm command to hack assembly."
   [{func :function args :args
     {ic :instruction-number :as context} :context}]
-  [(let [return-addr (+ ic 43) ; this command generates 43 asm instructions
+  [(let [return-addr (+ ic 47) ; this command generates 43 asm instructions
         arg-offset (+ args FRAME-SIZE)]
     (join-lines [(save-caller-frame return-addr)
                  (reposition-callee-arg arg-offset)
+                 (reposition-callee-lcl)
                  (at func)
                  "0;JMP"]))
    context])
