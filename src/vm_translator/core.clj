@@ -83,7 +83,7 @@
   (let [ctx (context/initialize)]
     (with-open [wrtr (io/writer output-path)]
       (reduce (create-files-reducer wrtr)
-              input-paths ctx))))
+              ctx input-paths))))
 
 (defn translate-dir
   "Translate a dir's vm files in to the specified asm
