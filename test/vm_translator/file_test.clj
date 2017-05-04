@@ -57,16 +57,16 @@
     (let [input "./path/to/file.vm"
           out (get-output-path input)]
       (is (= out "./path/to/file.asm"))))
-  (testing "Should support directories"
-    (let [input "path/to/MyProject"
+  (testing "For directories, appends a file with same name in the directory"
+    (let [input "test/FibonacciElement"
           out (get-output-path input)]
-      (is (= out "path/to/MyProject.asm")))
-    (let [input "/path/to/Project"
+      (is (= out "test/FibonacciElement/FibonacciElement.asm")))
+    (let [input (.getAbsolutePath (io/as-file "test/NestedCall"))
           out (get-output-path input)]
-      (is (= out "/path/to/Project.asm")))
-    (let [input "path/to/App/"
+      (is (= out (.getAbsolutePath (io/as-file "test/NestedCall/NestedCall.asm"))))
+    (let [input "test/FibonacciElement/"
           out (get-output-path input)]
-      (is (= out "path/to/App.asm")))))
+      (is (= out "test/FibonacciElement/FibonacciElement.asm"))))))
 
 (deftest get-class-name-test
   (testing "Get filename without extension"
